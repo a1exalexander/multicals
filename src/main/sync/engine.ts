@@ -152,7 +152,7 @@ export function queryEvents(
     const hidden = new Set(visibleOnly ? store.hiddenCalendars(acc.id) : [])
     for (const e of cache.events) {
       // parseISO reads date-only (all-day) values as local midnight.
-      if (hidden.has(e.calendarId)) continue
+      if (e.accountId !== acc.id || hidden.has(e.calendarId)) continue
       if (parseISO(e.end).getTime() > from && parseISO(e.start).getTime() < to) out.push(e)
     }
   }

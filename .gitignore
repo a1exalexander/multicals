@@ -5,3 +5,4 @@ dist
 e2e/screens
 test-results
 playwright-report
+.claude/worktrees

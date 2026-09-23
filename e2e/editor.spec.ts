@@ -38,7 +38,7 @@ test('editor requires an explicit account; RSVP goes through the invite account'
   // Invites panel -> details -> Accept.
   await expect(page.getByTestId('invites-button')).toContainText('1')
   await page.getByTestId('invites-button').click()
-  await page.getByText('Sprint planning').click()
+  await page.locator('.invites-name', { hasText: 'Sprint planning' }).click()
   const details = page.getByTestId('details')
   await expect(details).toBeVisible()
   await expect(details).toContainText('Reply as me@work.example')

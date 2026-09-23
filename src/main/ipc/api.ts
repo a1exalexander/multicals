@@ -2,7 +2,7 @@ import { z } from 'zod'
 import type { Api } from '@shared/ipc'
 import type { CaldavAccountInput, CalEvent, Credentials } from '@shared/types'
 import type { AccountStore } from '../accounts/store'
-import type { SyncEngine } from '../sync/engine'
+import { queryEvents, type SyncEngine } from '../sync/engine'
 
 export interface ApiDeps {
   verifyCaldav(input: CaldavAccountInput): Promise<{ email: string }>
@@ -72,9 +72,6 @@ const CaldavInput = z.object({
 
 const AccountPatch = z.object({ label: text(200).min(1).optional(), color: color.optional() }).strict()
 const RsvpStatus = z.enum(['accepted', 'declined', 'tentative'])
-
-const overlaps = (e: CalEvent, start: number, end: number): boolean =>
-  Date.parse(e.end) > start && Date.parse(e.start) < end
 
 export function createApi(store: AccountStore, sync: SyncEngine, deps: ApiDeps): Omit<Api, 'onChanged' | 'onMenu'> {
   const account = (accountId: unknown) => {
@@ -151,17 +148,7 @@ export function createApi(store: AccountStore, sync: SyncEngine, deps: ApiDeps):
       }
     },
     events: {
-      list: async (raw) => {
-        const range = Range.parse(raw)
-        const start = Date.parse(range.start)
-        const end = Date.parse(range.end)
-        return store.list().flatMap((a) => {
-          const hidden = new Set(store.hiddenCalendars(a.id))
-          return store
-            .readCache(a.id)
-            .events.filter((e) => e.accountId === a.id && !hidden.has(e.calendarId) && overlaps(e, start, end))
-        })
-      },
+      list: async (raw) => queryEvents(store, Range.parse(raw)),
       create: async (raw) => {
         const input = NewEvent.parse(raw)
         const a = account(input.accountId)

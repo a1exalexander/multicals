@@ -155,22 +155,23 @@ describe('SyncEngine', () => {
 })
 
 describe('queryEvents', () => {
-  it('filters by range overlap and hidden calendars', () => {
+  it('filters by range overlap, hidden calendars and foreign accountIds', () => {
     const store = new FakeStore()
     store.add('work')
     store.add('personal')
     store.caches.set('work', {
       calendars: [],
       events: [
-        ev('in', 'work-cal', '2026-09-23T09:00:00Z', '2026-09-23T10:00:00Z'),
-        ev('overlap', 'work-cal', '2026-09-22T23:00:00Z', '2026-09-23T01:00:00Z'),
-        ev('before', 'work-cal', '2026-09-22T09:00:00Z', '2026-09-23T00:00:00Z'),
-        ev('after', 'work-cal', '2026-09-24T00:00:00Z', '2026-09-24T01:00:00Z')
+        ev('in', 'work-cal', '2026-09-23T09:00:00Z', '2026-09-23T10:00:00Z', 'work'),
+        ev('overlap', 'work-cal', '2026-09-22T23:00:00Z', '2026-09-23T01:00:00Z', 'work'),
+        ev('before', 'work-cal', '2026-09-22T09:00:00Z', '2026-09-23T00:00:00Z', 'work'),
+        ev('after', 'work-cal', '2026-09-24T00:00:00Z', '2026-09-24T01:00:00Z', 'work'),
+        ev('foreign', 'work-cal', '2026-09-23T09:00:00Z', '2026-09-23T10:00:00Z', 'personal')
       ]
     })
     store.caches.set('personal', {
       calendars: [],
-      events: [ev('hidden', 'personal-cal', '2026-09-23T09:00:00Z', '2026-09-23T10:00:00Z')]
+      events: [ev('hidden', 'personal-cal', '2026-09-23T09:00:00Z', '2026-09-23T10:00:00Z', 'personal')]
     })
     store.hidden.set('personal', ['personal-cal'])
     const range = { start: '2026-09-23T00:00:00Z', end: '2026-09-24T00:00:00Z' }
