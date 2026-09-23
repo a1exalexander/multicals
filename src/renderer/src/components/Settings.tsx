@@ -168,6 +168,10 @@ function SyncPanel({ accounts }: { accounts: Account[] }): React.JSX.Element {
 function SyncRow({ account: a, busy }: { account: Account; busy: boolean }): React.JSX.Element {
   const [syncing, setSyncing] = useState(false)
   const [error, setError] = useState('')
+  // "Sync all" supersedes a stale per-row error; its outcome lands on a.error.
+  useEffect(() => {
+    if (busy) setError('')
+  }, [busy])
   const sync = async (): Promise<void> => {
     setSyncing(true)
     setError('')
