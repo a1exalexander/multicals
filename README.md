@@ -51,7 +51,7 @@ The build is unsigned (`identity: null` in `electron-builder.yml`). On first lau
 ## Adding Namecheap Private Email (CalDAV)
 
 1. In Private Email webmail, create an **application password** for the mailbox. You need one if 2FA is on, and it's a good idea anyway.
-2. In Multicals: **Add calendar → CalDAV**, preset **Namecheap Private Email**. The server URL `https://dav.privateemail.com/caldav` is filled in for you ([Namecheap docs](https://www.namecheap.com/support/knowledgebase/subcategory/2260/private-email-contacts-and-calendars-setup/)).
+2. In Multicals: **Add calendar → CalDAV**, preset **Namecheap Private Email**. The server URL `https://dav.privateemail.com/dav.php/` is filled in for you. It matches the SabreDAV root shown in Private Email → Configuration details → CalDAV ([Namecheap docs](https://www.namecheap.com/support/knowledgebase/subcategory/2260/private-email-contacts-and-calendars-setup/)).
 3. Enter your full email address as the username, paste the app password, and pick a label and colour.
 
 iCloud (`https://caldav.icloud.com/`, app-specific password from appleid.apple.com) and Fastmail (`https://caldav.fastmail.com/`, app password from Settings → Privacy & Security) work the same way. For any other server, choose **Custom**.
