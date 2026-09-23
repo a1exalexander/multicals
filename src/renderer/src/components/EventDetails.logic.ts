@@ -1,0 +1,38 @@
+import { addDays, format, isSameDay, parseISO } from 'date-fns'
+import type { Account, Calendar, CalEvent, PartStat } from '@shared/types'
+
+const same = (a?: string, b?: string): boolean => !!a && !!b && a.toLowerCase() === b.toLowerCase()
+
+/** Edit/Delete only for events this account organizes (or plain events) in writable calendars. */
+export function canEdit(e: CalEvent, account?: Account, calendar?: Calendar): boolean {
+  if (!account || !calendar || calendar.readOnly) return false
+  if (e.attendees.length === 0) return true
+  return same(e.organizer?.email, account.email) || e.attendees.some((a) => a.self && a.organizer)
+}
+
+/** Upcoming invites this account still has to answer, soonest first. */
+const at = (iso: string, allDay: boolean): number => (allDay ? parseISO(iso) : new Date(iso)).getTime()
+export const pendingInvites = (events: CalEvent[], now = new Date()): CalEvent[] =>
+  events
+    .filter((e) => e.myStatus === 'needsAction' && at(e.end, e.allDay) > now.getTime())
+    .sort((a, b) => at(a.start, a.allDay) - at(b.start, b.allDay))
+
+export function formatWhen(e: CalEvent): string {
+  if (e.allDay) {
+    const s = parseISO(e.start)
+    const last = addDays(parseISO(e.end), -1)
+    return last > s ? `${format(s, 'EEE, d MMM')} – ${format(last, 'EEE, d MMM')} · all day` : `${format(s, 'EEE, d MMM')} · all day`
+  }
+  const s = new Date(e.start)
+  const t = new Date(e.end)
+  return isSameDay(s, t)
+    ? `${format(s, 'EEE, d MMM')} · ${format(s, 'HH:mm')} – ${format(t, 'HH:mm')}`
+    : `${format(s, 'EEE, d MMM HH:mm')} – ${format(t, 'EEE, d MMM HH:mm')}`
+}
+
+export const STATUS_ICON: Record<PartStat, string> = {
+  accepted: '✓',
+  tentative: '?',
+  declined: '✕',
+  needsAction: '•'
+}
