@@ -1,0 +1,41 @@
+.editor { border-top: 3px solid var(--accent); }
+.editor-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.editor-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--accent); flex: none; }
+.editor-title {
+  flex: 1; font: inherit; font-size: 17px; font-weight: 600; color: var(--fg);
+  background: transparent; border: 0; outline: none; padding: 2px 0;
+}
+.editor-title::placeholder { color: var(--muted); font-weight: 500; }
+
+.editor-grid { display: grid; grid-template-columns: 76px 1fr; gap: 8px 10px; align-items: center; }
+.editor-grid > label:not(.editor-switch) { color: var(--muted); text-align: right; }
+.editor-grid input:not([type='checkbox']), .editor-grid select, .editor-grid textarea, .editor-chips {
+  font: inherit; color: var(--fg); background: transparent;
+  border: 0.5px solid var(--line); border-radius: 6px; padding: 4px 8px; min-height: 26px; width: 100%;
+  box-shadow: inset 0 0.5px 1px rgba(0, 0, 0, 0.06);
+}
+.editor-grid input:focus, .editor-grid select:focus, .editor-grid textarea:focus, .editor-chips:focus-within {
+  outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+.editor-grid select:has(option[value='']:checked) { color: var(--muted); }
+.editor-grid textarea { resize: vertical; }
+.editor-static { padding: 4px 0; font-weight: 500; }
+.editor-switch input { accent-color: var(--accent); width: 14px; height: 14px; margin: 0; }
+
+.editor-chips { display: flex; flex-wrap: wrap; gap: 4px; padding: 3px 4px; }
+.editor-grid .editor-chips input { flex: 1; min-width: 120px; border: 0; box-shadow: none; padding: 1px 4px; min-height: 20px; }
+.editor-grid .editor-chips input:focus { box-shadow: none; }
+.chip {
+  display: inline-flex; align-items: center; gap: 2px; padding: 1px 4px 1px 8px; border-radius: 10px;
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+.chip.bad { background: rgba(255, 69, 58, 0.18); }
+.chip button { font: inherit; border: 0; background: transparent; color: var(--muted); padding: 0 3px; }
+
+.editor-identity {
+  margin-top: 14px; padding: 8px 10px; border-radius: 8px; line-height: 1.5;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border-left: 3px solid var(--accent);
+}
+.editor-warn { color: var(--fg); }
+.editor-error { margin-top: 10px; color: #ff453a; }
