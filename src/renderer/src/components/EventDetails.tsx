@@ -4,7 +4,6 @@ import { bus } from '../bus'
 import { useDirectory } from './ui/useDirectory'
 import { canEdit, formatWhen, STATUS_ICON } from './EventDetails.logic'
 import { errorText } from './EventEditor.logic'
-import { InvitesPanel } from './Invites'
 import './ui/ui.css'
 import './EventDetails.css'
 
@@ -14,7 +13,7 @@ const W = 320
 const GAP = 8
 
 // Details popover + RSVP. Replies go only through the account that owns the event.
-export function EventDetailsHost(): React.JSX.Element {
+export function EventDetailsHost(): React.JSX.Element | null {
   const { accounts, calendars } = useDirectory()
   const [opened, setOpened] = useState<{ event: CalEvent; anchor?: DOMRect } | null>(null)
   const [busy, setBusy] = useState(false)
@@ -67,8 +66,7 @@ export function EventDetailsHost(): React.JSX.Element {
     setPos({ left, top })
   }, [opened])
 
-  // Same tree shape in both branches so the invites panel keeps its state.
-  if (!opened) return <><InvitesPanel /></>
+  if (!opened) return null
 
   const { event } = opened
   const account = accounts.find((a) => a.id === event.accountId)
@@ -101,7 +99,6 @@ export function EventDetailsHost(): React.JSX.Element {
 
   return (
     <>
-      <InvitesPanel />
       <div
         ref={ref}
         className="mc-popover details"
@@ -131,8 +128,8 @@ export function EventDetailsHost(): React.JSX.Element {
                 <li key={a.email} title={a.status}>
                   <span className={`status ${a.status}`} aria-label={a.status}>{STATUS_ICON[a.status]}</span>
                   <span className="who">{a.name ?? a.email}</span>
-                  {a.self && <span className="mc-muted"> (you)</span>}
-                  {a.organizer && <span className="mc-muted"> · organizer</span>}
+                  {a.self && <span className="tag">you</span>}
+                  {a.organizer && <span className="tag">organizer</span>}
                 </li>
               ))}
             </ul>

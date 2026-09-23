@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Account } from '@shared/types'
 import { bus } from '../bus'
+import { THEMES, applyTheme, useTheme } from '../theme'
 import { KindIcon, Sheet, Swatches, errorText } from './AccountsShared'
 
 // Unit 8 owns. Listens to bus 'settings:open'.
@@ -17,7 +18,10 @@ export function SettingsHost(): React.JSX.Element | null {
   }, [open])
 
   return (
-    <Sheet open={open} onClose={() => setOpen(false)} title="Accounts" testId="settings-sheet">
+    <Sheet open={open} onClose={() => setOpen(false)} title="Settings" testId="settings-sheet">
+      <h3 className="acc-section-title">Theme</h3>
+      <ThemePicker />
+      <h3 className="acc-section-title">Accounts</h3>
       {accounts.length === 0 ? (
         <p className="acc-note">No accounts yet.</p>
       ) : (
@@ -39,6 +43,35 @@ export function SettingsHost(): React.JSX.Element | null {
         </button>
       </div>
     </Sheet>
+  )
+}
+
+function ThemePicker(): React.JSX.Element {
+  const theme = useTheme()
+  return (
+    <div className="theme-grid" role="radiogroup" aria-label="Theme">
+      {THEMES.map((t) => (
+        <button
+          key={t.id}
+          type="button"
+          role="radio"
+          aria-checked={theme === t.id}
+          className="theme-opt"
+          data-testid={`theme-${t.id}`}
+          onClick={() => applyTheme(t.id)}
+        >
+          <span className="theme-swatch" style={{ background: t.preview[0] }} aria-hidden>
+            {t.preview.slice(1).map((c) => (
+              <i key={c} style={{ background: c }} />
+            ))}
+          </span>
+          <span className="theme-name">
+            {t.name}
+            {theme === t.id && <span className="on">●</span>}
+          </span>
+        </button>
+      ))}
+    </div>
   )
 }
 

@@ -1,6 +1,6 @@
 import { join } from 'path'
 import { readFileSync, writeFileSync } from 'fs'
-import { app, BrowserWindow, Menu, shell } from 'electron'
+import { app, BrowserWindow, Menu, nativeTheme, shell } from 'electron'
 import { IPC } from '@shared/ipc'
 import { registerApi } from './ipc/register'
 import { createMockApi } from './mock/mockApi'
@@ -36,7 +36,8 @@ function createWindow(): void {
     minHeight: 500,
     show: false,
     titleBarStyle: 'hiddenInset',
-    vibrancy: 'sidebar',
+    // Solid dark window (no vibrancy); matches --bg so there is no flash before first paint.
+    backgroundColor: '#0b0b10',
     trafficLightPosition: { x: 16, y: 18 },
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -70,6 +71,9 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
+  nativeTheme.themeSource = 'dark'
+  // Packaged builds get the icon from electron-builder; in dev the dock would show Electron's.
+  if (!app.isPackaged) app.dock?.setIcon(join(app.getAppPath(), 'build/icon.png'))
   Menu.setApplicationMenu(buildMenu())
   if (MOCK) {
     registerApi(createMockApi(broadcast))

@@ -1,24 +1,29 @@
-.invites { position: fixed; right: 16px; bottom: 16px; z-index: 30; -webkit-app-region: no-drag; }
+/* Lives in the status bar: the button is a bar segment, the panel opens upward. */
+.invites { position: relative; display: flex; -webkit-app-region: no-drag; }
 .invites-button {
-  position: relative; width: 36px; height: 36px; border-radius: 50%;
-  display: grid; place-items: center; color: var(--fg); background: var(--bg);
-  border: 0.5px solid var(--line); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.16); cursor: default;
+  height: 100%; padding: 0 12px; border: 0; border-left: 1px solid var(--line); border-radius: 0;
+  background: none; color: var(--muted); font: inherit;
 }
-.invites-button:hover { color: var(--accent); }
-.invites-badge {
-  position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px;
-  border-radius: 9px; background: #ff453a; color: #fff; font-size: 11px; font-weight: 600; line-height: 18px;
+.invites-button:hover { background: var(--hover); color: var(--fg); }
+.invites-button.has-pending { color: var(--orange); }
+.invites-button[aria-expanded='true'] { background: var(--hover); color: var(--fg); }
+.invites-panel {
+  position: absolute; right: 6px; bottom: calc(100% + 6px); width: 340px; max-height: 60vh;
+  padding: 10px 0 6px; font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 13px; line-height: 1.4;
+  white-space: normal; color: var(--fg);
 }
-.invites-panel { position: absolute; right: 0; bottom: 46px; width: 320px; max-height: 60vh; padding: 10px 0 6px; }
-.invites-title { font-weight: 600; padding: 0 14px 6px; }
+.invites-title {
+  padding: 0 14px 8px; font: 600 10.5px/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+}
 .invites-empty { padding: 6px 14px 10px; }
 .invites-panel ul { list-style: none; margin: 0; padding: 0; }
-.invites-panel li { padding: 8px 14px; border-top: 0.5px solid var(--line); border-left: 3px solid var(--accent); }
+.invites-panel li { padding: 9px 14px; border-top: 1px solid var(--line); border-left: 2px solid var(--accent); }
 .invites-open {
-  display: flex; flex-direction: column; align-items: flex-start; gap: 1px; width: 100%;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%;
   font: inherit; color: inherit; text-align: left; background: none; border: 0; padding: 0; cursor: default;
 }
 .invites-open:hover .invites-name { color: var(--accent); }
-.invites-name { font-weight: 500; }
-.invites-acc { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--muted); }
-.invites-actions { display: flex; gap: 6px; margin-top: 6px; }
+.invites-name { font-weight: 600; }
+.invites-open > .mc-muted { font: 11px/1.4 var(--mono); }
+.invites-acc { display: flex; align-items: center; gap: 6px; font: 11px/1.4 var(--mono); color: var(--muted); }
+.invites-actions { display: flex; gap: 6px; margin-top: 8px; }

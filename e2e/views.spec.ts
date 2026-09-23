@@ -4,11 +4,6 @@ test('calendar views: week/month/day, visibility toggle, screenshots', async () 
   const app = await electron.launch({ args: ['.'], env: { ...process.env, MULTICALS_MOCK: '1' } })
   const page = await app.firstWindow()
   await page.setViewportSize({ width: 1200, height: 800 })
-  // Screenshots capture web contents only, not the native vibrancy behind the transparent sidebar.
-  // Paint a stand-in so the shots resemble the real window.
-  await page.addStyleTag({
-    content: 'html{background:#ebe9ec}@media (prefers-color-scheme:dark){html{background:#2c2b2f}}'
-  })
   const blocks = page.getByTestId('event-block')
 
   // Week view (default) shows events from both isolated accounts.
@@ -43,10 +38,36 @@ test('calendar views: week/month/day, visibility toggle, screenshots', async () 
   await page.getByTestId('sidebar-calendar-personal-p-main').check()
   await expect(blocks.filter({ hasText: 'Gym' })).toHaveCount(1)
 
-  // emulateMedia flips CSS only; themeSource also darkens the native sidebar vibrancy.
-  await app.evaluate(({ nativeTheme }) => { nativeTheme.themeSource = 'dark' })
-  await page.emulateMedia({ colorScheme: 'dark' })
+  // vim keys: d/w/m switch views, h/l move, n opens the editor, i toggles invites.
+  await page.keyboard.press('m')
+  await expect(page.getByTestId('view-switch-month')).toHaveAttribute('aria-selected', 'true')
+  await page.keyboard.press('d')
+  await expect(page.locator('.tg-col')).toHaveCount(1)
+  await page.keyboard.press('l')
+  await expect(blocks.filter({ hasText: 'Gym' })).toHaveCount(0)
+  await page.keyboard.press('h')
+  await expect(blocks.filter({ hasText: 'Gym' })).toHaveCount(1)
+  await page.keyboard.press('w')
+  await expect(page.getByTestId('statusbar')).toContainText('week')
+  await page.keyboard.press('i')
+  await expect(page.locator('.invites-panel')).toBeVisible()
+  await page.keyboard.press('Escape')
+  await page.keyboard.press('n')
+  await expect(page.getByTestId('editor')).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(page.getByTestId('editor')).toHaveCount(0)
+
+  // Theme picker in Settings switches the palette and survives a reload.
+  await page.getByRole('button', { name: 'Settings' }).click()
   await page.waitForTimeout(300)
-  await page.screenshot({ path: 'e2e/screens/unit6-dark.png' })
+  await page.screenshot({ path: 'e2e/screens/theme-settings.png' })
+  await page.getByTestId('theme-tokyo').click()
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'tokyo')
+  await page.keyboard.press('Escape')
+  await page.waitForTimeout(200)
+  await page.screenshot({ path: 'e2e/screens/theme-tokyo.png' })
+  await page.reload()
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'tokyo')
+  await page.evaluate(() => localStorage.removeItem('multicals-theme'))
   await app.close()
 })

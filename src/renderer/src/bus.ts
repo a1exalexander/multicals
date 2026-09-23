@@ -10,6 +10,8 @@ export interface BusEvents {
   'event:edit': { event: CalEvent }
   'accounts:open': Record<string, never>
   'settings:open': Record<string, never>
+  /** Toggle the invitations panel in the status bar. */
+  'invites:open': Record<string, never>
 }
 
 type Handler<K extends keyof BusEvents> = (payload: BusEvents[K]) => void

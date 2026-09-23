@@ -12,16 +12,16 @@ const iso = (dayOffset: number, h: number, m = 0): string => {
 /** Two isolated fake accounts with seeded events. Used when MULTICALS_MOCK=1. */
 export function createMockApi(onChanged: (accountId: string) => void): Omit<Api, 'onChanged' | 'onMenu'> {
   const accounts: Account[] = [
-    { id: 'work', kind: 'caldav', label: 'Work', email: 'me@work.example', color: '#0a84ff' },
-    { id: 'personal', kind: 'google', label: 'Personal', email: 'me@gmail.example', color: '#30d158' }
+    { id: 'work', kind: 'caldav', label: 'Work', email: 'me@work.example', color: '#8be9fd' },
+    { id: 'personal', kind: 'google', label: 'Personal', email: 'me@gmail.example', color: '#50fa7b' }
   ]
   const providers = new Map<string, MockProvider>([
-    ['work', new MockProvider('work', 'me@work.example', [{ id: 'work-main', name: 'Work', color: '#0a84ff', readOnly: false }])],
+    ['work', new MockProvider('work', 'me@work.example', [{ id: 'work-main', name: 'Work', color: '#8be9fd', readOnly: false }])],
     [
       'personal',
       new MockProvider('personal', 'me@gmail.example', [
-        { id: 'p-main', name: 'Personal', color: '#30d158', readOnly: false },
-        { id: 'p-holidays', name: 'Holidays', color: '#ff9f0a', readOnly: true }
+        { id: 'p-main', name: 'Personal', color: '#50fa7b', readOnly: false },
+        { id: 'p-holidays', name: 'Holidays', color: '#f1fa8c', readOnly: true }
       ])
     ]
   ])

@@ -8,7 +8,7 @@ import { errorText } from './EventEditor.logic'
 import './ui/ui.css'
 import './Invites.css'
 
-// Floating inbox of unanswered invites (next 60 days). Each reply goes through the invite's own account.
+// Status-bar inbox of unanswered invites (next 60 days). Each reply goes through the invite's own account.
 export function InvitesPanel(): React.JSX.Element {
   const { accounts } = useDirectory()
   const [invites, setInvites] = useState<CalEvent[]>([])
@@ -33,6 +33,8 @@ export function InvitesPanel(): React.JSX.Element {
       off()
     }
   }, [])
+
+  useEffect(() => bus.on('invites:open', () => setOpen((o) => !o)), [])
 
   useEffect(() => {
     if (!open) return
@@ -95,16 +97,14 @@ export function InvitesPanel(): React.JSX.Element {
       )}
       <button
         type="button"
-        className="invites-button"
+        className={`invites-button${invites.length ? ' has-pending' : ''}`}
         data-testid="invites-button"
         aria-label={`Invitations (${invites.length})`}
-        title="Invitations"
+        aria-expanded={open}
+        title="Invitations (i)"
         onClick={() => setOpen(!open)}
       >
-        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-          <path d="M2 9.5 3.6 3.2A1 1 0 0 1 4.6 2.5h6.8a1 1 0 0 1 1 .7L14 9.5V13a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V9.5Zm0 0h3.5l1 1.5h3l1-1.5H14" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
-        </svg>
-        {invites.length > 0 && <span className="invites-badge">{invites.length}</span>}
+        {invites.length === 1 ? '1 invite' : `${invites.length} invites`}
       </button>
     </div>
   )

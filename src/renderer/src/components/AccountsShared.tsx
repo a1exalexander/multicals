@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react'
 import './Accounts.css'
 
-export const SWATCHES = ['#0a84ff', '#30d158', '#ff9f0a', '#ff453a', '#bf5af2', '#ff375f', '#64d2ff', '#8e8e93']
+/** Dracula accents: purple, green, cyan, pink, orange, yellow, red, comment. */
+export const SWATCHES = ['#bd93f9', '#50fa7b', '#8be9fd', '#ff79c6', '#ffb86c', '#f1fa8c', '#ff5555', '#6272a4']
 
 export const PRESETS = [
   { id: 'privateemail', name: 'Namecheap Private Email', url: 'https://dav.privateemail.com/dav.php/' },

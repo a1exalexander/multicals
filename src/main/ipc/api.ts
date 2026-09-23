@@ -11,7 +11,7 @@ export interface ApiDeps {
   onChanged?(accountId: string): void
 }
 
-const PALETTE = ['#0a84ff', '#30d158', '#ff9f0a', '#bf5af2', '#ff375f', '#64d2ff', '#ffd60a']
+const PALETTE = ['#bd93f9', '#50fa7b', '#8be9fd', '#ff79c6', '#ffb86c', '#f1fa8c']
 
 // ---- Trust boundary: everything from the renderer is parsed here. ----
 const id = z.string().min(1).max(1024)
