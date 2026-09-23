@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="head" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a9bff"/>
+      <stop offset="1" stop-color="#0a6cf0"/>
+    </linearGradient>
+    <linearGradient id="page" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#eef0f4"/>
+    </linearGradient>
+  </defs>
+  <!-- macOS icon grid: 824px rounded square centred on a 1024 canvas -->
+  <g transform="translate(100 100)">
+    <rect width="824" height="824" rx="185" fill="url(#page)"/>
+    <path d="M0 185A185 185 0 0 1 185 0H639A185 185 0 0 1 824 185V250H0Z" fill="url(#head)"/>
+    <g fill="#fff">
+      <rect x="230" y="60" width="56" height="130" rx="28"/>
+      <rect x="538" y="60" width="56" height="130" rx="28"/>
+    </g>
+    <!-- two separate accounts: never mixed -->
+    <rect x="130" y="340" width="564" height="150" rx="40" fill="#0a84ff"/>
+    <rect x="130" y="540" width="400" height="150" rx="40" fill="#30d158"/>
+  </g>
+</svg>
