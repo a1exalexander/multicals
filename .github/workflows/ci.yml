@@ -7,7 +7,7 @@ on:
   workflow_call: # release.yml gates desktop builds and the npm publish on this
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
