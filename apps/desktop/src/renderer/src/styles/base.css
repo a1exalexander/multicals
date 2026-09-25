@@ -444,3 +444,42 @@ a[href], button, select, summary, input[type=checkbox], label:has(input[type=che
   .ev, .sb-cal, .sb-loading, .toolbar-title, .first-sync, .loadbar, .sb-skel { animation: none; }
   button, .sb-cal, .ev, .mg-ev { transition: none; }
 }
+
+/* ---------- Toast ---------- */
+.toast {
+  position: fixed; left: 50%; bottom: 40px; z-index: 70; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 12px; padding: 8px 10px 8px 14px; max-width: min(520px, calc(100vw - 32px));
+  background: var(--surface-2); border: 1px solid var(--line-strong); border-radius: 8px;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.5); font: 12px/1.4 var(--mono); color: var(--fg);
+  animation: toast-in 180ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+.toast.is-error { border-color: color-mix(in srgb, var(--red) 50%, transparent); color: var(--red); }
+.toast button {
+  border: 0; border-radius: 4px; padding: 3px 8px; background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent); font: 600 11.5px/1.4 var(--mono);
+}
+.toast button:hover { background: color-mix(in srgb, var(--accent) 26%, transparent); }
+@keyframes toast-in { from { opacity: 0; transform: translate(-50%, 8px) scale(0.98); } }
+@media (prefers-reduced-motion: reduce) { .toast { animation: none; } }
+
+/* ---------- Drag to move / resize ---------- */
+.ev-resize {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 6px; cursor: ns-resize;
+}
+.ev-timed.is-draggable:hover .ev-resize::after {
+  content: ''; position: absolute; left: 50%; bottom: 2px; width: 16px; height: 2px; margin-left: -8px;
+  border-radius: 1px; background: color-mix(in srgb, var(--c) 70%, var(--fg));
+}
+.ev.is-dragged { opacity: 0.35; }
+.ev-preview {
+  z-index: 5; pointer-events: none; animation: none;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.45), 0 0 0 1px color-mix(in srgb, var(--c) 60%, transparent);
+  background: color-mix(in srgb, var(--c) 28%, var(--bg));
+}
+.ev-preview .ev-meta { font-weight: 700; opacity: 1; }
+body[data-dragging='move'], body[data-dragging='move'] * { cursor: grabbing !important; }
+body[data-dragging='resize'], body[data-dragging='resize'] * { cursor: ns-resize !important; }
+body[data-dragging] .ett { display: none; }
+.mg-cell.is-drop { background: color-mix(in srgb, var(--accent) 8%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent); }
+.mg-cell .mg-ev.ev-preview:not(.ev-allday) { box-shadow: none; background: color-mix(in srgb, var(--c) 22%, var(--bg)); }
+@media (prefers-reduced-motion: reduce) { .toast, .ev-preview { animation: none; } }
