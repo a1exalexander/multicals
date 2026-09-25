@@ -3,7 +3,7 @@ import { addDays, format, isSameDay, isToday } from 'date-fns'
 import type { CalEvent } from '@shared/types'
 import { bus } from '../bus'
 import { tooltipHover } from '../components/EventTooltip'
-import { meetingUrl } from '@mysticals/core/logic/meeting'
+import { meetingUrl, place } from '@mysticals/core/logic/meeting'
 import { nav } from './nav'
 import { dragRange, eventBounds, eventsOnDay, isPast, layoutDay, slotAt, statusClass, ymd } from '@mysticals/core/logic/layout'
 import type { ColorOf } from './CalendarView'
@@ -45,10 +45,25 @@ export function TimeGrid({ days, events, colorOf }: Props): React.JSX.Element {
   const [now, setNow] = useState(() => new Date())
   const [drag, setDrag] = useState<{ day: Date; a: number; b: number } | null>(null)
 
+  // Opens on a whole hour: with today shown, the one that puts now about a third down the grid, else 08:00.
   useEffect(() => {
-    if (scroller.current) scroller.current.scrollTop = pxOf(8 * 60) - 8
-    const t = setInterval(() => setNow(new Date()), 60_000)
-    return () => clearInterval(t)
+    const el = scroller.current
+    if (!el) return
+    const t = new Date()
+    const hours = (el.clientHeight - (el.querySelector<HTMLElement>('.tg-head')?.offsetHeight ?? 0)) / HOUR
+    const top = days.some((d) => isToday(d)) ? Math.floor(t.getHours() + t.getMinutes() / 60 - hours / 3) : 8
+    el.scrollTop = pxOf(Math.max(0, top) * 60) - 8
+  }, []) // only on mount: later steps keep the user's scroll
+
+  // Tick on the minute so the now-line and its clock never lag behind the real time.
+  useEffect(() => {
+    let t: ReturnType<typeof setTimeout>
+    const tick = (): void => {
+      setNow(new Date())
+      t = setTimeout(tick, 60_000 - (Date.now() % 60_000))
+    }
+    t = setTimeout(tick, 60_000 - (Date.now() % 60_000))
+    return () => clearTimeout(t)
   }, [])
 
   const minuteAt = (clientY: number, col: HTMLElement): number =>
@@ -83,6 +98,7 @@ export function TimeGrid({ days, events, colorOf }: Props): React.JSX.Element {
 
   const nowMin = now.getHours() * 60 + now.getMinutes()
   const multi = days.length > 1
+  const showsToday = days.some((d) => isToday(d))
 
   return (
     <div className={`tg${multi ? '' : ' tg-single'}`} ref={scroller}>
@@ -132,10 +148,20 @@ export function TimeGrid({ days, events, colorOf }: Props): React.JSX.Element {
       <div className="tg-body" style={{ height: pxOf(1440) }}>
         <div className="tg-gutter">
           {Array.from({ length: 23 }, (_, i) => i + 1).map((h) => (
-            <span key={h} className="tg-hour" style={{ top: pxOf(h * 60) }}>
+            <span
+              key={h}
+              className="tg-hour"
+              // the now clock takes the place of an hour label it would overlap
+              style={{ top: pxOf(h * 60), visibility: showsToday && Math.abs(nowMin - h * 60) < 12 ? 'hidden' : undefined }}
+            >
               {String(h).padStart(2, '0')}:00
             </span>
           ))}
+          {showsToday && (
+            <span className="tg-now-clock" data-testid="now-clock" style={{ top: pxOf(nowMin) }}>
+              {hhmm(now)}
+            </span>
+          )}
         </div>
         {days.map((d) => (
           <div
@@ -172,7 +198,7 @@ export function TimeGrid({ days, events, colorOf }: Props): React.JSX.Element {
                   <span className="ev-title">{e.title}</span>
                   <span className="ev-meta">
                     {hhmm(b.start)}
-                    {e.location ? ` · ${e.location}` : ''}
+                    {e.location ? ` · ${place(e.location)}` : ''}
                   </span>
                 </div>
               )
@@ -185,10 +211,13 @@ export function TimeGrid({ days, events, colorOf }: Props): React.JSX.Element {
                 </div>
               )
             })()}
-            {isToday(d) && (
+            {isToday(d) ? (
               <div className="tg-now" style={{ top: pxOf(nowMin) }}>
                 <span className="tg-now-dot" />
               </div>
+            ) : (
+              // the same time on the other days of the view, faint
+              showsToday && <div className="tg-now is-faint" style={{ top: pxOf(nowMin) }} />
             )}
           </div>
         ))}

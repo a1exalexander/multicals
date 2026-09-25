@@ -77,7 +77,8 @@ export function CalendarView(): React.JSX.Element {
   return (
     <div className="calendar-view" data-testid="calendar-view">
       <header className="toolbar">
-        <h1 className="toolbar-title">
+        {/* Keyed by the period so a step to the next one fades the new title in. */}
+        <h1 className="toolbar-title" key={`${view}/${format(days[0], 'yyyy-MM-dd')}`}>
           {view === 'day' ? format(date, 'd MMMM') : view === '3day' ? rangeLabel(days[0], days[2]) : format(date, 'MMMM')}
           <span className="toolbar-sub">
             {view !== '3day' && format(date, 'yyyy')}
@@ -116,6 +117,7 @@ export function CalendarView(): React.JSX.Element {
           + new
         </button>
       </header>
+      {firstSync.length > 0 && <div className="loadbar" role="progressbar" aria-label="Syncing" data-testid="loadbar" />}
       {view === 'month' ? (
         <MonthGrid date={date} events={events} colorOf={colorOf} />
       ) : (

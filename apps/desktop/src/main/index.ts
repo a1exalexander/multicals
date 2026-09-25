@@ -178,7 +178,13 @@ app.whenReady().then(() => {
       onSyncing: broadcast // renderer re-reads accounts.list for the `syncing` flag
     })
     try {
-      const signIn = (): ReturnType<typeof googleSignIn> => googleSignIn((url) => shell.openExternal(url))
+      // The user finishes sign-in in the browser: bring Mysticals back so they see the new account load.
+      const signIn = async (): ReturnType<typeof googleSignIn> => {
+        const r = await googleSignIn((url) => shell.openExternal(url))
+        showMain()
+        if (MAC) app.focus({ steal: true })
+        return r
+      }
       const onAccountAdded = (info: AccountAdded): void => track?.('account_added', info)
       registerApi(createApi(store, sync, { verifyCaldav, googleSignIn: signIn, onChanged: broadcast, onAccountAdded }))
       sync.start()
