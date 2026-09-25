@@ -88,7 +88,9 @@ describe('Accounts overlay', () => {
   it('shows CalDAV errors and esc backs out to the list', async () => {
     t = renderWith(<Accounts onClose={() => {}} />)
     await t.waitFor('Holidays')
-    await t.press('a', KEY.tab, KEY.tab, ...'me@x.co', KEY.tab, 'p', KEY.enter)
+    await t.press('a')
+    await t.waitFor('Private Email')
+    await t.press(KEY.tab, KEY.tab, ...'me@x.co', KEY.tab, 'p', KEY.enter)
     await t.waitFor('Not available in mock mode')
     await t.press(KEY.esc)
     await t.waitFor('Accounts & calendars')
