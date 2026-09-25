@@ -42,3 +42,24 @@ test('Google sign-in shows the connecting step once the browser is done', async 
   await expect(page.getByTestId('google-connecting')).toContainText('Connecting your account')
   await app.close()
 })
+
+test('CalDAV shows its connecting steps and keeps the form for a retry', async () => {
+  const app = await electron.launch({ args: ['.'], env: { ...process.env, MYSTICALS_MOCK: '1' } })
+  const page = await app.firstWindow()
+  await app.evaluate(({ ipcMain }) => {
+    ipcMain.removeHandler('accounts:addCaldav')
+    ipcMain.handle('accounts:addCaldav', () => new Promise((_, reject) => setTimeout(() => reject(new Error('401 Unauthorized')), 800)))
+  })
+  await page.getByText('Add calendar').click()
+  await page.getByTestId('add-caldav').click()
+  const sheet = page.getByTestId('accounts-sheet')
+  await sheet.getByLabel('Email', { exact: true }).fill('me@acme.io')
+  await sheet.getByLabel('App password').fill('secret')
+  await page.getByTestId('add-caldav-submit').click()
+  await expect(page.getByTestId('caldav-connecting')).toContainText('Signing in to dav.privateemail.com…')
+  await expect(sheet.getByLabel('App password')).toBeHidden()
+  await expect(sheet.getByRole('alert')).toContainText('401 Unauthorized')
+  await expect(page.getByTestId('caldav-connecting')).toHaveCount(0)
+  await expect(sheet.getByLabel('Email', { exact: true })).toHaveValue('me@acme.io') // kept for the retry
+  await app.close()
+})

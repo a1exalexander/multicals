@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { bus } from '../bus'
-import { PRESETS, SWATCHES, Sheet, Swatches, errorText, suggestLabel } from './AccountsShared'
+import { ConnectSteps, PRESETS, SWATCHES, Sheet, Swatches, errorText, hostOf, suggestLabel } from './AccountsShared'
 
 type Step = 'choose' | 'google' | 'connecting' | 'caldav'
 
@@ -94,13 +94,11 @@ export function AccountsHost(): React.JSX.Element | null {
         </div>
       )}
       {step === 'connecting' && (
-        <div className="acc-waiting" role="status" data-testid="google-connecting">
-          <ol className="acc-steps">
-            <li className="done">Signed in with Google</li>
-            <li className="active">Connecting your account…</li>
-            <li>Loading calendars</li>
-          </ol>
-        </div>
+        <ConnectSteps
+          testId="google-connecting"
+          steps={['Signed in with Google', 'Connecting your account…', 'Loading calendars']}
+          active={1}
+        />
       )}
       {step === 'caldav' && <CaldavForm onBack={() => setStep('choose')} onDone={closeIfCurrent(session.current)} />}
     </Sheet>
@@ -140,6 +138,15 @@ function CaldavForm(props: { onBack: () => void; onDone: () => void }): React.JS
 
   return (
     <form className="acc-form" onSubmit={submit}>
+      {/* The server check takes a few seconds: show progress; the fields stay (hidden) for a retry after an error. */}
+      {busy && (
+        <ConnectSteps
+          testId="caldav-connecting"
+          steps={[`Signing in to ${hostOf(serverUrl.trim())}…`, 'Loading calendars']}
+          active={0}
+        />
+      )}
+      <div className="acc-form-fields" hidden={busy}>
       <label>
         <span>Provider</span>
         <select
@@ -209,11 +216,12 @@ function CaldavForm(props: { onBack: () => void; onDone: () => void }): React.JS
         <span>Colour</span>
         <Swatches value={color} onChange={setColor} name="Account colour" />
       </div>
+      </div>
       {error && <p className="acc-error" role="alert">{error}</p>}
-      <div className="acc-actions">
+      <div className="acc-actions" hidden={busy}>
         <button type="button" onClick={props.onBack} disabled={busy}>Back</button>
         <button type="submit" className="acc-primary" data-testid="add-caldav-submit" disabled={busy}>
-          {busy ? 'Connecting…' : 'Add account'}
+          Add account
         </button>
       </div>
     </form>
