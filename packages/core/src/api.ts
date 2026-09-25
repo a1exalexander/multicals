@@ -3,7 +3,8 @@ import type { Api } from './shared/ipc'
 import type { CaldavAccountInput, CalEvent, Credentials } from './shared/types'
 import type { AccountStore } from './accounts/store'
 import { queryEvents, type SyncEngine } from './sync/engine'
-import { caldavPreset, type AccountAdded } from './telemetry'
+import { caldavPreset } from './shared/presets'
+import type { AccountAdded } from './telemetry'
 
 export interface ApiDeps {
   verifyCaldav(input: CaldavAccountInput): Promise<{ email: string }>

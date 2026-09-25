@@ -2,6 +2,7 @@ import { chmodSync, mkdirSync, rmSync } from 'fs'
 import { createConnection, createServer, type Server, type Socket } from 'net'
 import { createApi } from '@mysticals/core/api'
 import { AccountStore } from '@mysticals/core/accounts/store'
+import { nodeStoreFs } from '@mysticals/core/accounts/nodeFs'
 import { createMockApi } from '@mysticals/core/mock/mockApi'
 import { createCaldavProvider, verifyCaldav } from '@mysticals/core/providers/caldav'
 import { createGoogleProvider, googleSignIn, setClientConfig } from '@mysticals/core/providers/google'
@@ -136,7 +137,7 @@ export async function runDaemon(): Promise<void> {
     // ponytail: goes to every TUI, so two concurrent sign-ins may see each other's URL; target the caller if that bites.
     const signInBrowser = (url: string): Promise<void> => (push({ event: 'authUrl', url }), openUrl(url).catch(() => {}))
     const factories = { caldav: createCaldavProvider, google: createGoogleProvider }
-    const store = new AccountStore(home, factories, createCrypto(undefined, home))
+    const store = new AccountStore(home, factories, createCrypto(undefined, home), nodeStoreFs)
     sync = new SyncEngine(store, (id) => broadcast(id), {
       triggers: wakeTriggers(),
       onEvents: (id, notes) => notify(store, id, notes),

@@ -1,4 +1,3 @@
-import { randomUUID } from 'crypto'
 import { parseISO } from 'date-fns'
 import type { Calendar, CalEvent, DeleteScope, NewEventInput, PartStat, TimeRange } from '../shared/types'
 import type { CalendarProvider } from '../providers/types'
@@ -30,7 +29,7 @@ export class MockProvider implements CalendarProvider {
 
   async createEvent(calendarId: string, input: NewEventInput): Promise<CalEvent> {
     const ev: CalEvent = {
-      id: randomUUID(),
+      id: crypto.randomUUID(),
       accountId: this.accountId,
       calendarId,
       title: input.title,

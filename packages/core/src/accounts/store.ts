@@ -1,7 +1,3 @@
-import { randomUUID } from 'crypto'
-import { existsSync, readFileSync } from 'fs'
-import { mkdir, rename, rm, writeFile } from 'fs/promises'
-import { join } from 'path'
 import type { Account, AccountKind, Calendar, CalEvent, Credentials } from '../shared/types'
 import type { CalendarProvider, ProviderFactory } from '../providers/types'
 
@@ -12,26 +8,34 @@ export interface AccountCache {
 }
 
 export interface SecretCrypto {
-  encrypt(plain: string): Buffer
-  decrypt(data: Buffer): string
+  encrypt(plain: string): Uint8Array
+  decrypt(data: Uint8Array): string
+}
+
+/** File access the store needs; injected so the store itself stays platform-free (Node: `nodeStoreFs`). */
+export interface StoreFs {
+  join(...parts: string[]): string
+  /** Missing file -> undefined. */
+  readText(file: string): string | undefined
+  readBytes(file: string): Uint8Array
+  mkdir(dir: string): Promise<void>
+  /** Replaces the file atomically (temp file + rename), private to the user. */
+  writeAtomic(file: string, data: string | Uint8Array): Promise<void>
+  /** Recursive; missing dir is fine. */
+  rmdir(dir: string): Promise<void>
 }
 
 const ID_RE = /^[a-zA-Z0-9-]{1,64}$/
 
 /** Missing file -> fallback; unparseable file -> throws with the path, so the user knows what to fix. */
-function readJson<T>(file: string, fallback: T): T {
-  if (!existsSync(file)) return fallback
+function readJson<T>(fs: StoreFs, file: string, fallback: T): T {
+  const text = fs.readText(file)
+  if (text === undefined) return fallback
   try {
-    return JSON.parse(readFileSync(file, 'utf8')) as T
+    return JSON.parse(text) as T
   } catch (e) {
     throw new Error(`Could not read ${file}: ${(e as Error).message}`)
   }
-}
-
-async function writeAtomic(file: string, data: string | Buffer): Promise<void> {
-  const tmp = `${file}.${randomUUID()}.tmp`
-  await writeFile(tmp, data, { mode: 0o600 })
-  await rename(tmp, file)
 }
 
 // Layout: <dir>/accounts.json registry (metadata only); <dir>/accounts/<id>/{creds.bin,cache.json,prefs.json}
@@ -45,21 +49,22 @@ export class AccountStore {
   constructor(
     readonly dir: string,
     readonly factories: Record<AccountKind, ProviderFactory>,
-    private readonly crypto: SecretCrypto
+    private readonly crypto: SecretCrypto,
+    private readonly fs: StoreFs
   ) {
     // Never fall back to [] here: the next save would wipe every account.
-    this.accounts = readJson<Account[]>(this.registryFile, [])
+    this.accounts = readJson<Account[]>(this.fs, this.registryFile, [])
     if (!Array.isArray(this.accounts)) throw new Error(`Could not read ${this.registryFile}: not a list of accounts`)
   }
 
   private get registryFile(): string {
-    return join(this.dir, 'accounts.json')
+    return this.fs.join(this.dir, 'accounts.json')
   }
 
   /** Validates the id before it ever becomes part of a path (no traversal). */
   private accountDir(id: string): string {
     if (!ID_RE.test(id)) throw new Error(`Invalid account id: ${JSON.stringify(id)}`)
-    return join(this.dir, 'accounts', id)
+    return this.fs.join(this.dir, 'accounts', id)
   }
 
   private require(id: string): Account {
@@ -77,18 +82,18 @@ export class AccountStore {
   }
 
   private saveRegistry(): Promise<void> {
-    return writeAtomic(this.registryFile, JSON.stringify(this.accounts, null, 2))
+    return this.fs.writeAtomic(this.registryFile, JSON.stringify(this.accounts, null, 2))
   }
 
   private async writeCreds(id: string, creds: Credentials): Promise<void> {
     const dir = this.accountDir(id)
     const data = this.crypto.encrypt(JSON.stringify(creds))
-    await mkdir(dir, { recursive: true })
-    await writeAtomic(join(dir, 'creds.bin'), data)
+    await this.fs.mkdir(dir)
+    await this.fs.writeAtomic(this.fs.join(dir, 'creds.bin'), data)
   }
 
   private readCreds(id: string): Credentials {
-    return JSON.parse(this.crypto.decrypt(readFileSync(join(this.accountDir(id), 'creds.bin')))) as Credentials
+    return JSON.parse(this.crypto.decrypt(this.fs.readBytes(this.fs.join(this.accountDir(id), 'creds.bin')))) as Credentials
   }
 
   list(): Account[] {
@@ -100,7 +105,7 @@ export class AccountStore {
   }
   async add(meta: Omit<Account, 'id'>, creds: Credentials): Promise<Account> {
     if (creds.kind !== meta.kind) throw new Error('Credentials kind does not match account kind')
-    const account: Account = { id: randomUUID(), kind: meta.kind, label: meta.label, email: meta.email, color: meta.color }
+    const account: Account = { id: crypto.randomUUID(), kind: meta.kind, label: meta.label, email: meta.email, color: meta.color }
     return this.serial(async () => {
       // Creds first: if encryption is unavailable nothing is registered.
       await this.writeCreds(account.id, creds)
@@ -139,7 +144,7 @@ export class AccountStore {
       this.caches.delete(id)
       this.accounts = this.accounts.filter((a) => a.id !== id)
       await this.saveRegistry()
-      await rm(dir, { recursive: true, force: true })
+      await this.fs.rmdir(dir)
     })
   }
   /** Isolated provider instance for this account only (memoized per account). */
@@ -165,7 +170,7 @@ export class AccountStore {
   readCache(id: string): AccountCache {
     const hit = this.caches.get(id)
     if (hit) return hit
-    const cache = readJson<AccountCache>(join(this.accountDir(id), 'cache.json'), { calendars: [], events: [] })
+    const cache = readJson<AccountCache>(this.fs, this.fs.join(this.accountDir(id), 'cache.json'), { calendars: [], events: [] })
     if (this.get(id)) this.caches.set(id, cache)
     return cache
   }
@@ -173,8 +178,8 @@ export class AccountStore {
     return this.serial(async () => {
       const dir = this.accountDir(id)
       this.require(id)
-      await mkdir(dir, { recursive: true })
-      await writeAtomic(join(dir, 'cache.json'), JSON.stringify(cache))
+      await this.fs.mkdir(dir)
+      await this.fs.writeAtomic(this.fs.join(dir, 'cache.json'), JSON.stringify(cache))
       this.caches.set(id, cache)
     })
   }
@@ -185,9 +190,9 @@ export class AccountStore {
   }
   hiddenCalendars(id: string): string[] {
     // Prefs are only calendar visibility: a corrupt file just shows everything again (rewritten on the next toggle).
-    const file = join(this.accountDir(id), 'prefs.json')
+    const file = this.fs.join(this.accountDir(id), 'prefs.json')
     try {
-      const hidden = readJson<{ hidden?: unknown }>(file, {}).hidden
+      const hidden = readJson<{ hidden?: unknown }>(this.fs, file, {}).hidden
       return Array.isArray(hidden) ? hidden.filter((h): h is string => typeof h === 'string') : []
     } catch {
       return []
@@ -200,8 +205,8 @@ export class AccountStore {
       if (visible) hidden.delete(calendarId)
       else hidden.add(calendarId)
       const dir = this.accountDir(id)
-      await mkdir(dir, { recursive: true })
-      await writeAtomic(join(dir, 'prefs.json'), JSON.stringify({ hidden: [...hidden] }))
+      await this.fs.mkdir(dir)
+      await this.fs.writeAtomic(this.fs.join(dir, 'prefs.json'), JSON.stringify({ hidden: [...hidden] }))
     })
   }
 }

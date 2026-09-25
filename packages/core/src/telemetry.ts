@@ -36,13 +36,7 @@ export function telemetryOff(env: NodeJS.ProcessEnv = process.env): boolean {
   return (!!env.DO_NOT_TRACK && !no(env.DO_NOT_TRACK)) || no(env.MYSTICALS_TELEMETRY) || env.MYSTICALS_MOCK === '1'
 }
 
-// Built-in CalDAV presets of both apps, by server host; any other server is 'custom' (its URL is never sent).
-const PRESETS: Record<string, string> = {
-  'dav.privateemail.com': 'privateemail',
-  'caldav.icloud.com': 'icloud',
-  'caldav.fastmail.com': 'fastmail'
-}
-export const caldavPreset = (serverUrl: string): string => PRESETS[new URL(serverUrl).hostname] ?? 'custom'
+export { caldavPreset } from './shared/presets'
 
 /** Reads the install id, creating it on first run (`fresh`). */
 function installId(dir: string): { id: string; fresh: boolean } {

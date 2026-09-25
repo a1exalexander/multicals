@@ -6,6 +6,7 @@ import { IPC } from '@shared/ipc'
 import { createMockApi } from '@mysticals/core/mock/mockApi'
 import { createApi } from '@mysticals/core/api'
 import { AccountStore, type SecretCrypto } from '@mysticals/core/accounts/store'
+import { nodeStoreFs } from '@mysticals/core/accounts/nodeFs'
 import { SyncEngine } from '@mysticals/core/sync/engine'
 import { noteText, type Note } from '@mysticals/core/sync/notify'
 import type { AccountAdded } from '@mysticals/core/telemetry'
@@ -93,7 +94,7 @@ const safeStorageCrypto: SecretCrypto = {
     if (!secureStorageReady()) throw new Error(NO_SECURE_STORAGE)
     return safeStorage.encryptString(plain)
   },
-  decrypt: (data) => safeStorage.decryptString(data)
+  decrypt: (data) => safeStorage.decryptString(Buffer.from(data))
 }
 
 const stateFile = (): string => join(app.getPath('userData'), 'window-state.json')
@@ -170,7 +171,7 @@ app.whenReady().then(() => {
     const factories = { caldav: createCaldavProvider, google: createGoogleProvider }
     let store: AccountStore
     try {
-      store = new AccountStore(app.getPath('userData'), factories, safeStorageCrypto)
+      store = new AccountStore(app.getPath('userData'), factories, safeStorageCrypto, nodeStoreFs)
     } catch (e) {
       // Unreadable accounts.json: say so and quit rather than open a window with no backend. The file is left as is.
       const file = join(app.getPath('userData'), 'accounts.json')

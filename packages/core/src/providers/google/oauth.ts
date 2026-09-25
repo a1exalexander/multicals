@@ -1,94 +1,16 @@
 import { createHash, randomBytes } from 'crypto'
 import { createServer } from 'http'
 import type { AddressInfo } from 'net'
-import type { Credentials } from '../../shared/types'
 import { timedFetch } from '../http'
+import { buildAuthUrl, getClientConfig, postToken, type GoogleCredentials } from './token'
 
-export type GoogleCredentials = Extract<Credentials, { kind: 'google' }>
+export * from './token'
 
-export const AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth'
-export const TOKEN_URL = 'https://oauth2.googleapis.com/token'
-export const SCOPES = 'openid email https://www.googleapis.com/auth/calendar'
 const TIMEOUT_MS = 5 * 60 * 1000
-
-export interface ClientConfig {
-  clientId: string
-  clientSecret: string
-}
-
-let clientConfig: Partial<ClientConfig> = {}
-
-/** Set once at startup by the app (both from build-time MYSTICALS_GOOGLE_CLIENT_ID/SECRET). */
-export function setClientConfig(cfg: Partial<ClientConfig>): void {
-  clientConfig = cfg
-}
-
-export function getClientConfig(): ClientConfig {
-  const { clientId, clientSecret } = clientConfig
-  if (!clientId || !clientSecret) throw new Error('Google sign-in is not configured in this build: add a CalDAV account, or build from source with MYSTICALS_GOOGLE_CLIENT_ID/SECRET set')
-  return { clientId, clientSecret }
-}
 
 export function createPkce(): { verifier: string; challenge: string } {
   const verifier = randomBytes(32).toString('base64url')
   return { verifier, challenge: createHash('sha256').update(verifier).digest('base64url') }
-}
-
-export function buildAuthUrl(p: { clientId: string; redirectUri: string; state: string; codeChallenge: string }): string {
-  const url = new URL(AUTH_URL)
-  url.search = new URLSearchParams({
-    client_id: p.clientId,
-    redirect_uri: p.redirectUri,
-    response_type: 'code',
-    scope: SCOPES,
-    state: p.state,
-    code_challenge: p.codeChallenge,
-    code_challenge_method: 'S256',
-    access_type: 'offline',
-    prompt: 'consent'
-  }).toString()
-  return url.toString()
-}
-
-/** Decodes the id_token payload. No signature check: the token came straight from Google's token endpoint over TLS. */
-export function emailFromIdToken(idToken: string): string | undefined {
-  try {
-    const payload = JSON.parse(Buffer.from(idToken.split('.')[1], 'base64url').toString('utf8'))
-    return typeof payload.email === 'string' ? payload.email : undefined
-  } catch {
-    return undefined
-  }
-}
-
-export interface TokenResult {
-  accessToken: string
-  expiresAt: number
-  refreshToken?: string
-  email?: string
-}
-
-export function parseTokenResponse(json: unknown, now = Date.now()): TokenResult {
-  const j = (json ?? {}) as Record<string, unknown>
-  if (typeof j.error === 'string') throw new Error(`Google token error: ${j.error}${j.error_description ? ` (${j.error_description})` : ''}`)
-  if (typeof j.access_token !== 'string') throw new Error('Google token response has no access_token')
-  const expiresIn = typeof j.expires_in === 'number' ? j.expires_in : 3600
-  return {
-    accessToken: j.access_token,
-    expiresAt: now + expiresIn * 1000,
-    refreshToken: typeof j.refresh_token === 'string' ? j.refresh_token : undefined,
-    email: typeof j.id_token === 'string' ? emailFromIdToken(j.id_token) : undefined
-  }
-}
-
-export async function postToken(params: Record<string, string>): Promise<TokenResult> {
-  const res = await timedFetch(TOKEN_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams(params).toString()
-  })
-  const json = await res.json().catch(() => ({ error: `http_${res.status}` }))
-  if (!res.ok && !json.error) json.error = `http_${res.status}`
-  return parseTokenResponse(json)
 }
 
 const DONE_HTML = (msg: string, returnUrl?: string): string =>

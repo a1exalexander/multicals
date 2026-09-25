@@ -6,6 +6,7 @@ import type { Credentials } from '../shared/types'
 import type { ProviderContext, ProviderFactory } from '../providers/types'
 import { MockProvider } from '../mock/MockProvider'
 import { AccountStore, type SecretCrypto } from './store'
+import { nodeStoreFs } from './nodeFs'
 
 // Reversible fake "encryption" so tests can assert plaintext never hits disk.
 const fakeCrypto: SecretCrypto = {
@@ -38,7 +39,7 @@ const accDir = (id: string) => join(dir, 'accounts', id)
 beforeEach(() => {
   dir = mkdtempSync(join(tmpdir(), 'mysticals-store-'))
   contexts = []
-  store = new AccountStore(dir, { caldav: factory(), google: factory() }, fakeCrypto)
+  store = new AccountStore(dir, { caldav: factory(), google: factory() }, fakeCrypto, nodeStoreFs)
 })
 afterEach(() => rmSync(dir, { recursive: true, force: true }))
 
@@ -68,7 +69,7 @@ describe('AccountStore isolation', () => {
     await contexts[0].saveCredentials(refreshed)
     expect(readFileSync(join(accDir(work.id), 'creds.bin'))).toEqual(bBefore)
 
-    const fresh = new AccountStore(dir, { caldav: factory(), google: factory() }, fakeCrypto)
+    const fresh = new AccountStore(dir, { caldav: factory(), google: factory() }, fakeCrypto, nodeStoreFs)
     contexts = []
     fresh.getProvider(personal.id)
     fresh.getProvider(work.id)
@@ -133,7 +134,7 @@ describe('AccountStore isolation', () => {
     await store.writeCache(work.id, { calendars: [], events: [], syncedAt: 'now' })
     store.patchCache(work.id, (c) => ({ ...c, syncedAt: 'patched' }))
     expect(store.readCache(work.id).syncedAt).toBe('patched')
-    const fresh = new AccountStore(dir, { caldav: factory(), google: factory() }, fakeCrypto)
+    const fresh = new AccountStore(dir, { caldav: factory(), google: factory() }, fakeCrypto, nodeStoreFs)
     expect(fresh.readCache(work.id).syncedAt).toBe('now')
     expect(() => store.patchCache('ghost', (c) => c)).toThrow()
   })
@@ -166,7 +167,7 @@ describe('AccountStore isolation', () => {
     const encrypt = vi.fn(() => {
       throw new Error('Secure storage is unavailable')
     })
-    const s = new AccountStore(dir, { caldav: factory(), google: factory() }, { encrypt, decrypt: fakeCrypto.decrypt })
+    const s = new AccountStore(dir, { caldav: factory(), google: factory() }, { encrypt, decrypt: fakeCrypto.decrypt }, nodeStoreFs)
     await expect(s.add({ kind: 'caldav', label: 'W', email: 'w@x', color: '#000' }, workCreds)).rejects.toThrow()
     expect(s.list()).toEqual([])
     expect(existsSync(join(dir, 'accounts.json'))).toBe(false)
@@ -190,7 +191,7 @@ describe('AccountStore isolation', () => {
 
   it('persists the registry across restarts', async () => {
     await addBoth()
-    const fresh = new AccountStore(dir, { caldav: factory(), google: factory() }, fakeCrypto)
+    const fresh = new AccountStore(dir, { caldav: factory(), google: factory() }, fakeCrypto, nodeStoreFs)
     expect(fresh.list()).toEqual(store.list())
   })
 })
@@ -209,9 +210,9 @@ describe('AccountStore corrupt files', () => {
     await addBoth()
     const file = join(dir, 'accounts.json')
     writeFileSync(file, '[{"id":')
-    expect(() => new AccountStore(dir, { caldav: factory(), google: factory() }, fakeCrypto)).toThrow(`Could not read ${file}`)
+    expect(() => new AccountStore(dir, { caldav: factory(), google: factory() }, fakeCrypto, nodeStoreFs)).toThrow(`Could not read ${file}`)
     writeFileSync(file, '{}')
-    expect(() => new AccountStore(dir, { caldav: factory(), google: factory() }, fakeCrypto)).toThrow(/not a list of accounts/)
+    expect(() => new AccountStore(dir, { caldav: factory(), google: factory() }, fakeCrypto, nodeStoreFs)).toThrow(/not a list of accounts/)
     expect(readFileSync(file, 'utf8')).toBe('{}')
   })
 })
