@@ -55,7 +55,7 @@ MYSTICALS_MOCK=1 pnpm dev # two fake isolated accounts, no network
 pnpm typecheck
 pnpm test                 # unit tests
 pnpm e2e                  # Playwright smoke tests of the desktop app (mock mode)
-pnpm dist                 # installers for the current OS (ad-hoc signed on macOS) in apps/desktop/dist/
+pnpm dist                 # installers for the current OS in apps/desktop/dist/
                           # (macOS .dmg/.zip, Windows setup .exe, Linux .AppImage/.deb)
 ```
 
@@ -63,7 +63,7 @@ On Windows, set the mock flag first: `$env:MYSTICALS_MOCK=1` (PowerShell) or `se
 
 Run a single app with `pnpm --filter <name> <script>`, for example `pnpm --filter @mysticals/desktop dev` or `pnpm --filter @mysticals/landing dev`.
 
-Builds are not code-signed with a certificate: macOS builds are ad-hoc signed and not notarized (`identity: "-"` in `apps/desktop/electron-builder.yml`), Windows builds are unsigned.
+Release builds for macOS are signed with a Developer ID certificate and notarized in CI. Local `pnpm dist` signs only if a Developer ID certificate is in your keychain and notarizes only with the `APPLE_*` variables set; otherwise the app is unsigned, which is fine for local testing. Windows builds are unsigned.
 
 ### Terminal app
 
@@ -86,6 +86,17 @@ A `v*` tag runs `.github/workflows/release.yml`. It builds the desktop app on ma
    git push origin v0.2.0
    ```
 
-Required repo secrets: `NPM_TOKEN`, `MYSTICALS_GOOGLE_CLIENT_ID`, `MYSTICALS_GOOGLE_CLIENT_SECRET` (one Desktop-app OAuth client shared by both apps). Optional: `MYSTICALS_POSTHOG_KEY` (no telemetry without it).
+Required repo secrets:
+
+- `NPM_TOKEN`
+- `MYSTICALS_GOOGLE_CLIENT_ID`, `MYSTICALS_GOOGLE_CLIENT_SECRET`: one Desktop-app OAuth client shared by both apps.
+- macOS signing and notarization:
+  - `MAC_CSC_LINK`: the **Developer ID Application** certificate with its private key, exported from Keychain Access as `.p12` and base64-encoded (`base64 -i cert.p12 | pbcopy`).
+  - `MAC_CSC_KEY_PASSWORD`: the `.p12` export password.
+  - `APPLE_ID`: the Apple Account email of the developer team.
+  - `APPLE_APP_SPECIFIC_PASSWORD`: an app-specific password from [account.apple.com](https://account.apple.com) → Sign-In and Security.
+  - `APPLE_TEAM_ID`: the 10-character Team ID from developer.apple.com → Membership.
+
+Optional: `MYSTICALS_POSTHOG_KEY` (no telemetry without it).
 
 Installed apps pick up the release on their own. On macOS the desktop app downloads the `.zip` for its architecture and updates itself. On Windows and Linux its update button opens the release page. The terminal app shows a hint to run `npm i -g mysticals`.

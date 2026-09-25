@@ -16,9 +16,10 @@ mac:
       arch: [arm64, x64]
     - target: zip
       arch: [arm64, x64]
-  # Ad-hoc signed, not notarized: a valid signature gets macOS "Open Anyway" instead of "damaged".
-  identity: "-"
-  hardenedRuntime: false
+  # Release CI signs with the Developer ID certificate from CSC_LINK and notarizes with APPLE_ID /
+  # APPLE_APP_SPECIFIC_PASSWORD / APPLE_TEAM_ID (see release.yml). Without them, local builds are unsigned.
+  # Hardened runtime is required for notarization; electron-builder adds Electron's default entitlements.
+  hardenedRuntime: true
 dmg:
   artifactName: ${productName}-${version}-${arch}.dmg
 # Unsigned too: SmartScreen shows "More info → Run anyway" on first launch.

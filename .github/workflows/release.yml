@@ -36,11 +36,31 @@ jobs:
         run: test "${GITHUB_REF_NAME#v}" = "$(node -p "require('./apps/desktop/package.json').version")"
       - name: Check Google OAuth secrets are set
         run: test -n "$MYSTICALS_GOOGLE_CLIENT_ID" && test -n "$MYSTICALS_GOOGLE_CLIENT_SECRET" || { echo "::error::MYSTICALS_GOOGLE_CLIENT_ID/SECRET secrets are empty"; exit 1; }
+      - name: Check Apple signing secrets are set
+        if: runner.os == 'macOS'
+        env:
+          CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          for v in CSC_LINK CSC_KEY_PASSWORD APPLE_ID APPLE_APP_SPECIFIC_PASSWORD APPLE_TEAM_ID; do
+            test -n "${!v}" || { echo "::error::$v secret is empty (see CONTRIBUTING.md#releasing)"; exit 1; }
+          done
       - name: Build
         run: pnpm --filter @mysticals/desktop build
-      # macOS: dmg + zip (arm64 + x64); Windows: nsis .exe; Linux: AppImage + deb. Targets live in electron-builder.yml.
+      # macOS: dmg + zip (arm64 + x64), signed with Developer ID and notarized; Windows: nsis .exe; Linux: AppImage + deb.
+      # Targets live in electron-builder.yml. The Apple values are passed on macOS only: electron-builder would
+      # otherwise try to sign the Windows installer with CSC_LINK too.
       - name: Package
         run: pnpm --filter @mysticals/desktop dist --publish never
+        env:
+          CSC_LINK: ${{ runner.os == 'macOS' && secrets.MAC_CSC_LINK || '' }}
+          CSC_KEY_PASSWORD: ${{ runner.os == 'macOS' && secrets.MAC_CSC_KEY_PASSWORD || '' }}
+          APPLE_ID: ${{ runner.os == 'macOS' && secrets.APPLE_ID || '' }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ runner.os == 'macOS' && secrets.APPLE_APP_SPECIFIC_PASSWORD || '' }}
+          APPLE_TEAM_ID: ${{ runner.os == 'macOS' && secrets.APPLE_TEAM_ID || '' }}
       - uses: actions/upload-artifact@v4
         with:
           name: desktop-${{ matrix.os }}
