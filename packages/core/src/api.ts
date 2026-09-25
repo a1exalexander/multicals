@@ -77,7 +77,7 @@ const AccountPatch = z.object({ label: text(200).min(1).optional(), color: color
 const RsvpStatus = z.enum(['accepted', 'declined', 'tentative'])
 const Scope = z.enum(['one', 'following', 'all']).default('one')
 
-export function createApi(store: AccountStore, sync: SyncEngine, deps: ApiDeps): Omit<Api, 'onChanged' | 'onMenu'> {
+export function createApi(store: AccountStore, sync: SyncEngine, deps: ApiDeps): Omit<Api, 'onChanged' | 'onMenu' | 'onSignIn'> {
   const account = (accountId: unknown) => {
     const a = store.get(id.parse(accountId))
     if (!a) throw new Error('unknown account')

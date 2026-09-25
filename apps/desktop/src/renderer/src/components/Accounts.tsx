@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { bus } from '../bus'
 import { PRESETS, SWATCHES, Sheet, Swatches, errorText, suggestLabel } from './AccountsShared'
 
-type Step = 'choose' | 'google' | 'caldav'
+type Step = 'choose' | 'google' | 'connecting' | 'caldav'
 
 // Unit 8 owns: add Google / CalDAV account. Listens to bus 'accounts:open'.
 export function AccountsHost(): React.JSX.Element | null {
@@ -22,6 +22,9 @@ export function AccountsHost(): React.JSX.Element | null {
       }),
     []
   )
+
+  // Back from the browser: the code is being exchanged and the account saved, which takes a few seconds.
+  useEffect(() => window.api.onSignIn?.(() => setStep((s) => (s === 'google' ? 'connecting' : s))), [])
 
   const close = (): void => {
     session.current++
@@ -84,9 +87,19 @@ export function AccountsHost(): React.JSX.Element | null {
         <div className="acc-waiting">
           <span className="acc-spinner" aria-hidden />
           <p>Waiting for Google sign-in in your browser…</p>
+          <p className="acc-hint-center">Finish signing in there; Mysticals comes back on its own.</p>
           <div className="acc-actions">
             <button type="button" onClick={close}>Cancel</button>
           </div>
+        </div>
+      )}
+      {step === 'connecting' && (
+        <div className="acc-waiting" role="status" data-testid="google-connecting">
+          <ol className="acc-steps">
+            <li className="done">Signed in with Google</li>
+            <li className="active">Connecting your account…</li>
+            <li>Loading calendars</li>
+          </ol>
         </div>
       )}
       {step === 'caldav' && <CaldavForm onBack={() => setStep('choose')} onDone={closeIfCurrent(session.current)} />}
