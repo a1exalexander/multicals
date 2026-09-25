@@ -67,7 +67,7 @@ describe('Accounts overlay', () => {
     t.client.accounts.addCaldav.mockResolvedValue({ id: 'n', kind: 'caldav', label: 'Work', email: 'a@b.co', color: '#bd93f9' })
     await t.waitFor('Holidays')
     await t.press('a')
-    await t.waitFor('Namecheap Private Email')
+    await t.waitFor('Private Email')
     await t.press(KEY.right) // iCloud
     await t.waitFor('https://caldav.icloud.com/')
     await t.press(KEY.tab, KEY.tab, ...'a@b.co', KEY.tab, ...'secret')
