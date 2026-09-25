@@ -1,0 +1,43 @@
+---
+import Layout from '../layouts/Layout.astro'
+const gh = 'https://github.com/a1exalexander/mysticals'
+---
+<Layout title="Terms of Service — Mysticals" description="Terms for using the Mysticals desktop and terminal calendar apps.">
+  <section class="wrap page-head">
+    <span class="eyebrow">Effective 25 September 2026</span>
+    <h1>Terms of Service</h1>
+    <p class="lead">Mysticals is free, open-source software. These terms are short because there's no service behind it: the apps run on your computer and talk to your own calendar accounts.</p>
+  </section>
+
+  <section class="wrap doc">
+    <h2>Agreement</h2>
+    <p>By downloading, installing or using the Mysticals desktop app, the Mysticals terminal app (npm package <code>mysticals</code>) or this website, you agree to these terms. If you don't agree, don't use them.</p>
+
+    <h2>Licence</h2>
+    <p>Mysticals is released under the <a href={`${gh}/blob/main/LICENSE`}>MIT License</a>. You may use, copy, modify and distribute it under that licence. If these terms and the MIT License conflict, the MIT License wins for the software itself.</p>
+
+    <h2>Your accounts</h2>
+    <p>You connect your own Google and CalDAV accounts. You are responsible for those accounts and for what you do with them through Mysticals, including events you create, change or delete and invitations you reply to. Your use of Google Calendar remains subject to Google's terms, and your CalDAV provider's terms continue to apply to its service.</p>
+
+    <h2>Acceptable use</h2>
+    <p>Don't use Mysticals to break the law, to access accounts you aren't authorised to use, or to abuse, overload or interfere with Google's or any other provider's services.</p>
+
+    <h2>No warranty</h2>
+    <p>Mysticals is provided "as is", without warranty of any kind, express or implied, including fitness for a particular purpose. Calendar sync can fail: keep important events backed up with your provider.</p>
+
+    <h2>Limitation of liability</h2>
+    <p>To the extent permitted by law, the developer is not liable for any damages arising from the use of, or inability to use, Mysticals, including lost or changed calendar data, missed events or messages sent from your accounts.</p>
+
+    <h2>Privacy</h2>
+    <p>How the apps handle your data is described in the <a href="/privacy/">Privacy Policy</a>.</p>
+
+    <h2>Ending use</h2>
+    <p>You can stop using Mysticals at any time: remove your accounts in the app, uninstall it, and revoke its Google access at <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>.</p>
+
+    <h2>Changes</h2>
+    <p>These terms may be updated. The new version will be posted on this page with a new effective date.</p>
+
+    <h2>Contact</h2>
+    <p><a href="mailto:forcewizu@gmail.com">forcewizu@gmail.com</a>, or open an issue on <a href={`${gh}/issues`}>GitHub</a>.</p>
+  </section>
+</Layout>

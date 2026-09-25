@@ -1,0 +1,64 @@
+---
+import Layout from '../layouts/Layout.astro'
+const gh = 'https://github.com/a1exalexander/mysticals'
+---
+<Layout title="Privacy Policy — Mysticals" description="How the Mysticals desktop and terminal apps handle your Google and CalDAV calendar data.">
+  <section class="wrap page-head">
+    <span class="eyebrow">Effective 25 September 2026</span>
+    <h1>Privacy Policy</h1>
+    <p class="lead">Mysticals is a calendar app that runs on your computer. There are no Mysticals servers: your calendars travel only between your device and your calendar provider.</p>
+  </section>
+
+  <section class="wrap doc">
+    <p>This policy covers the Mysticals desktop app, the Mysticals terminal app (npm package <code>mysticals</code>) and this website. Mysticals is free, open-source software developed by Oleksandr Ratushnyi. The source code is public at <a href={gh}>github.com/a1exalexander/mysticals</a>, so you can check everything below.</p>
+
+    <h2>Data from Google accounts</h2>
+    <p>When you add a Google account, Mysticals asks Google for these permissions:</p>
+    <ul>
+      <li><b>Your email address</b> (<code>openid</code>, <code>email</code>): to label the account in the app and to show which account an event or reply belongs to.</li>
+      <li><b>Google Calendar</b> (<code>https://www.googleapis.com/auth/calendar</code>): to list your calendars, show their events, and create, edit and delete events and reply to invitations when you ask it to.</li>
+    </ul>
+    <p>Mysticals uses this data only to show and manage your calendars inside the app. It doesn't use Google user data for any other purpose.</p>
+
+    <h2>Where your data is stored</h2>
+    <ul>
+      <li>Calendars and events are cached only on your device, in the app's data folder, separately for each account.</li>
+      <li>Google sign-in tokens and CalDAV app passwords are encrypted on your device with the system's secure storage: the macOS Keychain, Windows DPAPI or the Linux Secret Service.</li>
+      <li>The app talks directly to Google (or your CalDAV server). Your calendar data, tokens and passwords are never sent to the developer or to any third party.</li>
+    </ul>
+
+    <h2>How Google user data is shared</h2>
+    <p>It isn't. Mysticals doesn't sell, rent or share Google user data. It doesn't use it for advertising, doesn't let any person read it, and doesn't use it to train AI or machine-learning models.</p>
+    <blockquote>Mysticals' use and transfer to any other app of information received from Google APIs will adhere to the <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, including the Limited Use requirements.</blockquote>
+
+    <h2>Anonymous usage stats</h2>
+    <p>The apps send two anonymous events to PostHog (EU servers) so the developer can count installs:</p>
+    <ul>
+      <li><code>app_installed</code>, once on first launch: app (desktop or terminal), version, operating system and CPU architecture.</li>
+      <li><code>account_added</code>, when you add an account: the same, plus the provider type (Google or CalDAV) and the CalDAV preset.</li>
+    </ul>
+    <p>The only identifier is a random ID created on first launch. No Google user data, emails, usernames, server addresses, calendars or events are ever included. GeoIP lookup is off and IP addresses are discarded. To opt out, set <code>MYSTICALS_TELEMETRY=0</code> or <code>DO_NOT_TRACK=1</code>, or in the desktop app turn off Settings → Privacy → Share anonymous usage stats.</p>
+
+    <h2>Other network requests</h2>
+    <p>To tell you about new versions, the desktop app checks the latest release on the GitHub API and the terminal app checks the npm registry. These requests contain no personal data.</p>
+
+    <h2>This website</h2>
+    <p>This site uses PostHog (EU) for anonymous page-view stats. It sets no cookies and stores nothing in your browser, and it respects Do Not Track.</p>
+
+    <h2>Deleting your data</h2>
+    <ul>
+      <li>Removing an account in Mysticals deletes its stored credentials and cached calendar data from your device.</li>
+      <li>You can also delete the whole data folder: <code>mysticals</code> (desktop) or <code>mysticals-terminal</code> (terminal) in your system's application-data folder.</li>
+      <li>You can revoke Mysticals' access to your Google account at any time at <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>.</li>
+    </ul>
+
+    <h2>Children</h2>
+    <p>Mysticals isn't directed at children under 13 and doesn't knowingly collect data from them.</p>
+
+    <h2>Changes</h2>
+    <p>If this policy changes, the new version will be posted on this page with a new effective date.</p>
+
+    <h2>Contact</h2>
+    <p>Questions or requests: <a href="mailto:forcewizu@gmail.com">forcewizu@gmail.com</a>, or open an issue on <a href={`${gh}/issues`}>GitHub</a>.</p>
+  </section>
+</Layout>

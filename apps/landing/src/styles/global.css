@@ -47,6 +47,14 @@ p { margin: 0; }
 .page-head { padding-block: clamp(56px, 7vw, 96px) 48px; display: flex; flex-direction: column; gap: 20px; }
 .page-head h1 { font-size: clamp(38px, 4.4vw, 60px); }
 .page-head .lead { max-width: 680px; font-size: 19px; line-height: 1.6; }
+/* long-form legal pages: /privacy, /terms */
+.doc { padding-bottom: clamp(72px, 8vw, 104px); display: flex; flex-direction: column; gap: 16px; font-size: 17px; line-height: 1.7; color: var(--soft); }
+.doc > * { max-width: 760px; }
+.doc h2 { margin-top: 32px; font-size: 24px; color: var(--fg); }
+.doc ul { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; }
+.doc a { text-decoration: underline; text-underline-offset: 3px; }
+.doc a:hover { color: #fff; }
+.doc blockquote { margin: 0; padding: 12px 18px; border-left: 2px solid var(--line-strong); color: var(--fg); }
 section.band { padding-block: clamp(72px, 9vw, 120px); border-top: 1px solid var(--line); }
 
 /* buttons */
