@@ -27,6 +27,8 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm --filter @mysticals/landing build
+      # Bundles the iOS JS with Metro (no Xcode needed) so a broken import or config fails before an EAS build.
+      - run: pnpm --filter @mysticals/mobile exec expo export --platform ios --output-dir "$RUNNER_TEMP/mobile-export"
 
   # The terminal app ships to macOS and Windows too. Desktop Playwright e2e is not run here.
   terminal:

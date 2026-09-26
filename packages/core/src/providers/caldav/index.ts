@@ -1,4 +1,3 @@
-import { randomUUID } from 'crypto'
 import {
   createAccount,
   createCalendarObject,
@@ -141,7 +140,7 @@ export const createCaldavProvider: ProviderFactory = (ctx) => {
 
     async createEvent(calendarId, input) {
       const { headers } = await getConn()
-      const uid = randomUUID()
+      const uid = crypto.randomUUID()
       const filename = `${uid}.ics`
       const ics = buildIcs(uid, input, ctx.email)
       check(await createCalendarObject({ calendar: { url: calendarId }, filename, iCalString: ics, headers, fetch: timedFetch }), 'Create event')

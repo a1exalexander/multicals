@@ -23,12 +23,12 @@ describe('crypto', () => {
     const keys = memKeys()
     const c = createCrypto(keys)
     expect(keys.key).toBeUndefined()
-    const blob = c.encrypt('sëcret')
+    const blob = Buffer.from(c.encrypt('sëcret'))
     expect(keys.key).toHaveLength(32)
     expect(blob[0]).toBe(1)
     expect(blob.toString('utf8')).not.toContain('sëcret')
     expect(createCrypto(keys).decrypt(blob)).toBe('sëcret')
-    expect(c.encrypt('sëcret').equals(blob)).toBe(false) // fresh IV
+    expect(Buffer.from(c.encrypt('sëcret')).equals(blob)).toBe(false) // fresh IV
   })
 
   it('rejects tampered or foreign blobs', () => {

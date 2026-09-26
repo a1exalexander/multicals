@@ -1,7 +1,7 @@
 import { createHash } from 'crypto'
 import { get } from 'http'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { buildAuthUrl, createPkce, emailFromIdToken, getClientConfig, parseTokenResponse, runOAuthFlow, setClientConfig } from './oauth'
+import { buildAuthUrl, createPkce, emailFromIdToken, getClientConfig, parseTokenResponse, runOAuthFlow, setClientConfig, signInResult } from './oauth'
 
 const jwt = (payload: object): string => `h.${Buffer.from(JSON.stringify(payload)).toString('base64url')}.s`
 
@@ -44,9 +44,19 @@ describe('oauth pure parts', () => {
     expect(() => parseTokenResponse({ error: 'invalid_grant' })).toThrow(/invalid_grant/)
   })
 
+  it('maps a sign-in token response to account credentials', async () => {
+    const tok = { accessToken: 'a', expiresAt: 5, refreshToken: 'r', email: 'me@gmail.com' }
+    expect(await signInResult(tok)).toEqual({ email: 'me@gmail.com', credentials: { kind: 'google', refreshToken: 'r', accessToken: 'a', expiresAt: 5 } })
+    await expect(signInResult({ ...tok, refreshToken: undefined })).rejects.toThrow('refresh token')
+  })
+
   it('throws a clear error when client id is missing', () => {
     setClientConfig({ clientSecret: 'secret' })
     expect(() => getClientConfig()).toThrow('not configured')
+    setClientConfig({ clientId: 'cid' })
+    expect(() => getClientConfig()).toThrow('not configured')
+    setClientConfig({ clientId: 'ios-cid', noSecret: true })
+    expect(getClientConfig()).toEqual({ clientId: 'ios-cid', clientSecret: undefined })
   })
 })
 

@@ -12,6 +12,7 @@ Turborepo + pnpm workspace. Apps live in `apps/*`, shared code in `packages/*`.
 - `apps/desktop` (`@mysticals/desktop`): the Electron app. Its `productName` in `package.json` is `mysticals`. Don't change it lightly: Electron derives the user-data folder with accounts (and the Keychain item) from it.
 - `apps/terminal` (npm package `mysticals`): the terminal app (Ink). Every open `mysticals` shares one background daemon that stops a few seconds after the last one closes. Its data lives in a `mysticals-terminal` folder (`~/Library/Application Support` on macOS, `%APPDATA%` on Windows, `$XDG_DATA_HOME` or `~/.local/share` on Linux), separate from the desktop app.
 - `apps/landing` (`@mysticals/landing`): the Astro website.
+- `apps/mobile` (`@mysticals/mobile`): the iOS app (Expo, React Native). Setup, architecture and TestFlight releases: [apps/mobile/README.md](apps/mobile/README.md).
 
 Credentials are always encrypted. The desktop app uses Electron `safeStorage` (Keychain on macOS, DPAPI on Windows, Secret Service on Linux; one file per account) and refuses to store credentials on Linux without a keyring. The terminal app keeps its key in the macOS Keychain or the Linux Secret Service (`secret-tool`), or seals it with Windows DPAPI.
 
@@ -85,6 +86,8 @@ A `v*` tag runs `.github/workflows/release.yml`. It builds the desktop app on ma
    git tag v0.2.0
    git push origin v0.2.0
    ```
+
+The iOS app releases separately, on `mobile-v*` tags (`.github/workflows/mobile.yml`, built and sent to TestFlight by EAS). See [apps/mobile/README.md](apps/mobile/README.md#release-testflight).
 
 Required repo secrets: `NPM_TOKEN`, `MYSTICALS_GOOGLE_CLIENT_ID`, `MYSTICALS_GOOGLE_CLIENT_SECRET` (one Desktop-app OAuth client shared by both apps). Optional: `MYSTICALS_POSTHOG_KEY` (no telemetry without it).
 

@@ -1,7 +1,7 @@
 import type { Attendee, Calendar, CalEvent, DeleteScope, PartStat } from '../../shared/types'
 import type { CalendarProvider, ProviderContext } from '../types'
 import { timedFetch } from '../http'
-import { getClientConfig, postToken, type GoogleCredentials } from './oauth'
+import { getClientConfig, postToken, type GoogleCredentials } from './token'
 
 const API = 'https://www.googleapis.com/calendar/v3'
 

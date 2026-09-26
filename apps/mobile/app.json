@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "Mysticals",
+    "slug": "mysticals",
+    "scheme": "mysticals",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0b0b10",
+    "ios": {
+      "bundleIdentifier": "app.mysticals.mobile",
+      "supportsTablet": true,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "app.mysticals.mobile"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-status-bar",
+      "expo-secure-store",
+      "expo-web-browser",
+      "expo-background-task",
+      "@react-native-community/datetimepicker",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 120,
+          "backgroundColor": "#0b0b10"
+        }
+      ],
+      "./plugins/withSceneLifecycle"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

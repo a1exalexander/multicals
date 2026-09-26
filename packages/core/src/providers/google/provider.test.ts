@@ -216,6 +216,15 @@ describe('provider', () => {
     await provider({ expiresAt: Date.now() - 1 }).listCalendars()
     expect(calls.map((c) => c.url.host)).toEqual(['oauth2.googleapis.com', 'www.googleapis.com'])
   })
+
+  it('refreshes a secret-less (iOS) client without sending client_secret', async () => {
+    setClientConfig({ clientId: 'ios-cid', noSecret: true })
+    respond = (c) => (c.url.host === 'oauth2.googleapis.com' ? Response.json({ access_token: 'new', expires_in: 3600 }) : Response.json({ items: [] }))
+    await provider({ expiresAt: Date.now() - 1 }).listCalendars()
+    const refreshBody = new URLSearchParams(calls[0].body)
+    expect(refreshBody.get('client_id')).toBe('ios-cid')
+    expect(refreshBody.has('client_secret')).toBe(false)
+  })
 })
 
 describe('truncateRecurrence', () => {
