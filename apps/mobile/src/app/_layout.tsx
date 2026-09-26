@@ -4,9 +4,12 @@ import { Stack } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { ToastHost } from '../components/Toast'
+import { setupNotifications } from '../notifications'
 import { useTheme } from '../theme'
 
 /** Root: calendar screen plus native iOS sheets for everything else (details, editor, calendars, invites, accounts, settings). */
+setupNotifications()
+
 export default function RootLayout(): React.JSX.Element {
   const t = useTheme()
   const sheet = {
