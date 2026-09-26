@@ -7,9 +7,9 @@ import { ToastHost } from '../components/Toast'
 import { setupNotifications } from '../notifications'
 import { useTheme } from '../theme'
 
-/** Root: calendar screen plus native iOS sheets for everything else (details, editor, calendars, invites, accounts, settings). */
 setupNotifications()
 
+/** Root: calendar screen plus native iOS sheets for everything else (details, editor, calendars, invites, accounts, settings). */
 export default function RootLayout(): React.JSX.Element {
   const t = useTheme()
   const sheet = {
