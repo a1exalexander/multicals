@@ -55,6 +55,10 @@ mysticals   # press ? for keys
 
 Full docs: [apps/terminal/README.md](apps/terminal/README.md).
 
+### iPhone
+
+An iOS app is in development in [apps/mobile](apps/mobile/README.md) and will ship through TestFlight first.
+
 ### Try it without accounts
 
 Two fake, isolated accounts, no network:
