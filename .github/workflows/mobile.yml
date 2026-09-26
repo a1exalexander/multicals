@@ -1,0 +1,56 @@
+name: Mobile release
+
+# iOS builds run on EAS (Expo's cloud), which signs, builds and submits to TestFlight.
+# Uses its own `mobile-v*` tags so desktop releases (`v*`, release.yml) are untouched.
+on:
+  push:
+    tags: ['mobile-v*']
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+
+permissions:
+  contents: read
+
+jobs:
+  ios:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Check tag matches apps/mobile version
+        if: github.ref_type == 'tag'
+        run: test "${GITHUB_REF_NAME#mobile-v}" = "$(node -p "require('./app.json').expo.version")"
+      - name: Check EXPO_TOKEN secret is set
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: test -n "$EXPO_TOKEN" || { echo "::error::EXPO_TOKEN secret is empty"; exit 1; }
+      - run: pnpm typecheck
+      - run: pnpm test
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          packager: pnpm
+          token: ${{ secrets.EXPO_TOKEN }}
+      # EAS cloud builds don't see this runner's env: EXPO_PUBLIC_* must live in the EAS `production` environment.
+      - name: Sync Google iOS client ID to EAS
+        env:
+          CLIENT_ID: ${{ vars.EXPO_PUBLIC_MYSTICALS_GOOGLE_IOS_CLIENT_ID }}
+        run: |
+          if [ -z "$CLIENT_ID" ]; then
+            echo "::warning::EXPO_PUBLIC_MYSTICALS_GOOGLE_IOS_CLIENT_ID repo variable is empty; the build keeps whatever EAS already has"
+            exit 0
+          fi
+          eas env:set --environment production --name EXPO_PUBLIC_MYSTICALS_GOOGLE_IOS_CLIENT_ID \
+            --value "$CLIENT_ID" --visibility plaintext --non-interactive
+      - name: Build and submit to TestFlight
+        run: eas build --platform ios --profile production --non-interactive --auto-submit

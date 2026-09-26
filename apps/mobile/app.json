@@ -10,7 +10,10 @@
     "backgroundColor": "#0b0b10",
     "ios": {
       "bundleIdentifier": "app.mysticals.mobile",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "app.mysticals.mobile"
