@@ -10,7 +10,10 @@ export const SCOPES = 'openid email https://www.googleapis.com/auth/calendar'
 
 export interface ClientConfig {
   clientId: string
-  clientSecret: string
+  /** Absent for iOS OAuth clients: Google treats them as public clients (PKCE, no secret). */
+  clientSecret?: string
+  /** Set by the mobile app, whose client has no secret, so a missing one isn't a misconfiguration. */
+  noSecret?: boolean
 }
 
 let clientConfig: Partial<ClientConfig> = {}
@@ -21,8 +24,8 @@ export function setClientConfig(cfg: Partial<ClientConfig>): void {
 }
 
 export function getClientConfig(): ClientConfig {
-  const { clientId, clientSecret } = clientConfig
-  if (!clientId || !clientSecret) throw new Error('Google sign-in is not configured in this build: add a CalDAV account, or build from source with MYSTICALS_GOOGLE_CLIENT_ID/SECRET set')
+  const { clientId, clientSecret, noSecret } = clientConfig
+  if (!clientId || (!clientSecret && !noSecret)) throw new Error('Google sign-in is not configured in this build: add a CalDAV account, or build from source with MYSTICALS_GOOGLE_CLIENT_ID/SECRET set')
   return { clientId, clientSecret }
 }
 
@@ -72,15 +75,31 @@ export function parseTokenResponse(json: unknown, now = Date.now()): TokenResult
   }
 }
 
-export async function postToken(params: Record<string, string>): Promise<TokenResult> {
+/** Undefined params are dropped (client_secret for secret-less clients). */
+export async function postToken(params: Record<string, string | undefined>): Promise<TokenResult> {
+  const body = Object.fromEntries(Object.entries(params).filter((e): e is [string, string] => e[1] !== undefined))
   const res = await timedFetch(TOKEN_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams(params).toString()
+    body: new URLSearchParams(body).toString()
   })
   const json = await res.json().catch(() => ({ error: `http_${res.status}` }))
   if (!res.ok && !json.error) json.error = `http_${res.status}`
   return parseTokenResponse(json)
+}
+
+/** Token response of a sign-in (authorization_code grant) -> what the app stores for the account. */
+export async function signInResult(tok: TokenResult): Promise<{ email: string; credentials: GoogleCredentials }> {
+  if (!tok.refreshToken) throw new Error('Google did not return a refresh token')
+  const email = tok.email ?? (await fetchUserEmail(tok.accessToken))
+  return { email, credentials: { kind: 'google', refreshToken: tok.refreshToken, accessToken: tok.accessToken, expiresAt: tok.expiresAt } }
+}
+
+async function fetchUserEmail(accessToken: string): Promise<string> {
+  const res = await timedFetch('https://openidconnect.googleapis.com/v1/userinfo', { headers: { Authorization: `Bearer ${accessToken}` } })
+  const json = (await res.json().catch(() => ({}))) as { email?: unknown }
+  if (!res.ok || typeof json.email !== 'string') throw new Error('Could not read Google account email')
+  return json.email
 }
 
 /** base64url -> UTF-8 text with web globals only (atob, TextDecoder), so it runs in Node and React Native alike. */

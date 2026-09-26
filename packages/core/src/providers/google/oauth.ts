@@ -1,8 +1,7 @@
 import { createHash, randomBytes } from 'crypto'
 import { createServer } from 'http'
 import type { AddressInfo } from 'net'
-import { timedFetch } from '../http'
-import { buildAuthUrl, getClientConfig, postToken, type GoogleCredentials } from './token'
+import { buildAuthUrl, getClientConfig, postToken, signInResult, type GoogleCredentials } from './token'
 
 export * from './token'
 
@@ -87,18 +86,9 @@ export async function runOAuthFlow(
       client_id: cfg.clientId,
       client_secret: cfg.clientSecret
     })
-    if (!tok.refreshToken) throw new Error('Google did not return a refresh token')
-    const email = tok.email ?? (await fetchUserEmail(tok.accessToken))
-    return { email, credentials: { kind: 'google', refreshToken: tok.refreshToken, accessToken: tok.accessToken, expiresAt: tok.expiresAt } }
+    return await signInResult(tok)
   } finally {
     server.closeAllConnections()
     server.close()
   }
-}
-
-async function fetchUserEmail(accessToken: string): Promise<string> {
-  const res = await timedFetch('https://openidconnect.googleapis.com/v1/userinfo', { headers: { Authorization: `Bearer ${accessToken}` } })
-  const json = (await res.json().catch(() => ({}))) as { email?: unknown }
-  if (!res.ok || typeof json.email !== 'string') throw new Error('Could not read Google account email')
-  return json.email
 }
