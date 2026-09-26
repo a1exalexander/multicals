@@ -93,7 +93,7 @@ function IconBtn(p: { glyph: string; label: string; badge?: number; onPress: () 
   )
 }
 
-/** Desktop's bracketed tabs `[ Week ]`, sized for thumbs, with a sliding highlight. */
+/** Desktop's view tabs, sized for thumbs, with a sliding highlight. */
 const ViewSwitch = memo(function ViewSwitch({ view }: { view: CalView }): React.JSX.Element {
   const t = useTheme()
   const [width, setWidth] = useState(0)
@@ -126,11 +126,7 @@ const ViewSwitch = memo(function ViewSwitch({ view }: { view: CalView }): React.
             accessibilityState={{ selected: active }}
             testID={`view-switch-${v}`}
           >
-            <Text style={[styles.segText, { color: active ? t.accent : t.muted }]}>
-              <Text style={{ opacity: active ? 1 : 0 }}>[ </Text>
-              {LABEL[v]}
-              <Text style={{ opacity: active ? 1 : 0 }}> ]</Text>
-            </Text>
+            <Text style={[styles.segText, { color: active ? t.accent : t.muted }]}>{LABEL[v]}</Text>
           </Pressable>
         )
       })}
