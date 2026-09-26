@@ -1,3 +1,4 @@
+import * as BackgroundTask from 'expo-background-task'
 import * as Notifications from 'expo-notifications'
 import * as TaskManager from 'expo-task-manager'
 import { AppState } from 'react-native'
@@ -69,7 +70,12 @@ export function setupNotifications(): void {
       e2e.notify = notifyChanges
       e2e.openNotification = open
       e2e.notifyPermission = allowed
-      e2e.backgroundRegistered = () => TaskManager.isTaskRegisteredAsync(SYNC_TASK)
+      // Simulators report Restricted (BGTaskScheduler is device-only), so registration is skipped there.
+      e2e.background = async () => ({
+        status: await BackgroundTask.getStatusAsync(),
+        defined: TaskManager.isTaskDefined(SYNC_TASK),
+        registered: await TaskManager.isTaskRegisteredAsync(SYNC_TASK)
+      })
     }
   }
 }
