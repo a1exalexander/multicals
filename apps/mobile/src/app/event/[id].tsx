@@ -1,6 +1,8 @@
-import { Placeholder } from '../../components/Placeholder'
+import { useLocalSearchParams } from 'expo-router'
+import { EventDetails } from '../../components/details/EventDetails'
 
-/** Stub; replaced by the event details work unit. */
+/** Event details sheet (native formSheet, see _layout.tsx). */
 export default function Screen(): React.JSX.Element {
-  return <Placeholder name="event details" />
+  const { id } = useLocalSearchParams<{ id: string }>()
+  return <EventDetails key={id} id={id} />
 }
