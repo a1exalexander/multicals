@@ -33,6 +33,8 @@ node scripts/e2e.mjs --port 8081 "__e2e.sheets.openSettings()"
 xcrun simctl io booted screenshot shot.png
 ```
 
+The iOS 27 simulator doesn't accept injected taps, so system prompts can't be answered by a script. Start Metro with `EXPO_PUBLIC_MYSTICALS_E2E=1` so dev builds skip the notification permission prompt.
+
 ## Architecture
 
 - **Core reuse.** Everything that isn't UI comes from `@mysticals/core`: types, the `Api` contract, account store, CalDAV and Google providers, sync engine, view layout math. Mobile only adds platform adapters in `src/api/mobile`: credentials encrypted with a key kept in the iOS Keychain, files, Google OAuth, and background refresh through expo-background-task.

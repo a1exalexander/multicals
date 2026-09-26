@@ -16,7 +16,9 @@ function allowed(): Promise<boolean> {
   if (asking) return asking
   const p = (async () => {
     const now = await Notifications.getPermissionsAsync()
-    if (now.granted || !now.canAskAgain || AppState.currentState !== 'active') return now.granted
+    // Automated simulator checks can't answer the system prompt (no touch injection on iOS 27), so they skip it.
+    const e2e = __DEV__ && process.env.EXPO_PUBLIC_MYSTICALS_E2E === '1'
+    if (e2e || now.granted || !now.canAskAgain || AppState.currentState !== 'active') return now.granted
     const res = await Notifications.requestPermissionsAsync({ ios: { allowAlert: true, allowSound: true, allowBadge: false } })
     return res.granted
   })()
