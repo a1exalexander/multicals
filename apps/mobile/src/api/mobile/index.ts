@@ -8,10 +8,10 @@ import { SyncEngine } from '@mysticals/core/sync/engine'
 import { createCaldavProvider, verifyCaldav } from '@mysticals/core/providers/caldav'
 // Not the google index: it pulls the Node loopback OAuth flow.
 import { createGoogleProviderImpl as createGoogleProvider } from '@mysticals/core/providers/google/provider'
-import { setClientConfig } from '@mysticals/core/providers/google/token'
 import { notifyChanges } from '../../notifications'
 import { expoStoreFs } from './fs'
 import { keychainCrypto } from './crypto'
+// ./google also sets the Google client config on load (iOS client, no secret), so it is not set here.
 import { googleSignIn } from './google'
 
 // AFTER_FIRST_UNLOCK: background refresh must still decrypt while the phone is locked; THIS_DEVICE_ONLY: never in backups.
@@ -29,7 +29,6 @@ export function createMobileApi(): Api {
     onMenu: () => () => {}
   }
 
-  setClientConfig({ clientId: process.env.EXPO_PUBLIC_MYSTICALS_GOOGLE_IOS_CLIENT_ID })
   let store: AccountStore
   try {
     store = new AccountStore(
